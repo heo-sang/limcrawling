@@ -17,11 +17,15 @@ if response.status_code == 200:
     
     #app > div > div.YjvyFted > div._0qEOfn5o > div > div.tWrauFr\+ > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2)
     # programs = soup.select('div>div>div') 
-    tagtemp = soup.find_all('#app > div > div.YjvyFted > div._0qEOfn5o > div > div.tWrauFr\+ > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2)')
-    title = soup.select('#app > div > div.YjvyFted > div._0qEOfn5o > div > div.tWrauFr\+ > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1)')
-  
+    # tagtemp = soup.find_all('#app > div > div.YjvyFted > div._0qEOfn5o > div > div.tWrauFr\+ > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2)')
+    title = soup.select_one('#app > div > div.k\+RfjiMA > div.tZQDPien > div > div._8cLLQQqW > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1)')
+    temp = title.text
+    print(type(temp))
+    temp = temp.replace(']', "]\n")
+#app > div > div.k\+RfjiMA > div.tZQDPien > div > div._8cLLQQqW > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1)
+#app > div > div.YjvyFted > div._0qEOfn5o > div > div.tWrauFr\+ > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1)    #app > div > div.YjvyFted > div._0qEOfn5o > div > div.tWrauFr\+ > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1)
     with open("output2.html", "w", encoding='utf8') as file:
-      file.write(title)
+      file.write(temp)
 else : 
   
     print(response.status_code)
