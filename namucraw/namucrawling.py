@@ -11,7 +11,8 @@ response = requests.get(url)
 if response.status_code == 200:
     html = response.content.decode('utf-8','replace') 
     soup = BeautifulSoup(html, 'lxml')
-    personality_base = soup.select_one('#app > div > div.k\+RfjiMA > div.tZQDPien > div > div._8cLLQQqW > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1)')
+    #태그 가변값임
+    personality_base = soup.select_one('#app > div > div._4IolB1uE > div.Ycu0qSVy > div > div.pZczw-xl > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1)')
     temp = personality_base
 
 
