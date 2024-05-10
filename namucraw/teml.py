@@ -76,3 +76,37 @@ for element in soup.find_all():
         element.decompose()  # display:none이 display:inline 뒤에 오는 경우는 삭제
 # 결과 출력
 print(soup.prettify())
+
+from bs4 import BeautifulSoup
+
+# 예시 HTML 코드
+html_content = """
+<html>
+<head>
+<title>HTML 예시</title>
+</head>
+<body>
+<img src="image1.jpg" alt="이미지 1">
+<img src="image2.jpg" alt="이미지 2">
+<div>
+  <img alt="림버스탐식UI" data-v-04926762="" height="100%" src="//i.namu.wiki/i/H7uPKycqvAx5nDBg4AwAuBR2aqEeppQzvb8wINs-0vI4N23X0RV_hD2jdxtoqNQ6gUzJbSrz8mer9IZgsHWJPQ.webp"/>
+</div>
+</body>
+</html>
+"""
+
+# BeautifulSoup 객체 생성
+soup = BeautifulSoup(html_content, 'html.parser')
+
+sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
+for element in soup.find_all('img'):
+  attrs = element.attrs
+  for sin in sin_list:
+    if sin not in attrs['alt'] : continue
+    print(sin) 
+
+img_tags = soup.find_all('img')
+
+# 각 이미지 태그에 content 추가하기
+for img_tag in img_tags:
+    img_tag.insert(0, "1234")

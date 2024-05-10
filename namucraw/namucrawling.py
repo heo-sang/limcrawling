@@ -12,12 +12,10 @@ if response.status_code == 200:
     html = response.content.decode('utf-8','replace') 
     soup = BeautifulSoup(html, 'lxml')
     #태그 가변값임
-    personality_base = soup.select_one('#app > div > div._4IolB1uE > div.Ycu0qSVy > div > div.pZczw-xl > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1)')
+    tag = '#app > div > div.oM0Uaymt > div.xdUQbVdc > div > div.p9IB\+xKR > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1)'
+    personality_base = soup.select_one(tag)
     temp = personality_base
 
-
-
-    
 
 
     
@@ -26,7 +24,7 @@ if response.status_code == 200:
        if content.strip():  # content가 공백이 아닌 경우에만 추가
         content_list.append(content.strip() + '\n')
     result = ''.join(content_list)
-    print(result)
+    #print(result)
     with open("t2.html", "w", encoding='utf8') as file:
       file.write(result) 
     with open("output2.html", "w", encoding='utf8') as file:
@@ -34,7 +32,7 @@ if response.status_code == 200:
       file.write(temp.text) # content만 남기기
 
     
-
+    ### 안보이는 영역 제거
     pattern = re.compile(r'.*display:inline.*display:none.*')
     for element in temp.find_all():
       attrs = element.attrs
@@ -44,15 +42,27 @@ if response.status_code == 200:
           element.clear()
           element.decompose()
 
+    ### 죄악 img 태그에 content 추가
+    sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
+    for element in temp.find_all('img'):
+      attrs = element.attrs
+      # if element.name == 'img': # img 태그 찾는방법
+      if( 'UI' not in attrs['alt']) : continue
+      for sin in sin_list:
+        if sin not in attrs['alt'] : continue
+        if element.parent.parent.parent.get_text().strip() == sin : continue
+        element.insert(0,sin)
+          
 
-    
+
+
     print()
     content_list = []
     for content in temp(text=True):
        if content.strip():  # content가 공백이 아닌 경우에만 추가
         content_list.append(content.strip() + '\n')
     result = ''.join(content_list)
-    print(result)
+    #print(result)
     with open("t1.html", "w", encoding='utf8') as file:
       file.write(result) 
     with open("yisang_seven_html.html", "w", encoding='utf8') as file:
