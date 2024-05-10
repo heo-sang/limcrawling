@@ -53,7 +53,13 @@ if response.status_code == 200:
         if element.parent.parent.parent.get_text().strip() == sin : continue
         element.insert(0,sin)
           
-
+    ### 스킬 앞에 번호 content 추가
+    skill_num = 1
+    for element in temp.find_all('img'):
+      attrs = element.attrs
+      if '스...' not in attrs['alt'] : continue
+      element.insert(0,str(skill_num) +'스킬') #임시로 이름은 고민좀
+      skill_num+=1
 
 
     print()
