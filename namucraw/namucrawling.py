@@ -64,10 +64,11 @@ if response.status_code == 200:
 
     ### 합이후 코인별 행동 추가
     for element in temp.find_all('img'):
-      attrs = element.attrs
+      attrs = element.attrs 
       for coin in range(1,9):
-        if '림버스컴퍼니 '+ str(coin) not in attrs['alt'] : continue
-        element.insert(0,str(coin) + '코인') #이름 변경 예정
+        if ('alt' in attrs and 
+            attrs['alt'] == '림버스컴퍼니 '+ str(coin)) :
+          element.insert(0,str(coin) + '코인') #이름 변경 예정
 
     print()
     content_list = []
