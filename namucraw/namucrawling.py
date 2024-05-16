@@ -12,7 +12,7 @@ if response.status_code == 200:
     html = response.content.decode('utf-8','replace') 
     soup = BeautifulSoup(html, 'lxml')
     #태그 가변값임
-    tag = '#app > div > div.LZA9khF2.eqGYV4Y4 > div > div.wE\+YAUs5 > div > div.Q0sf3rmj > div > div:nth-child(2) > div > div > div:nth-child(18) > div:nth-child(1)'
+    tag = '#app > div > div._4S7sNrVH.U\+SPf0aA > div > div.AP\+iPcbn > div > div.qkFgeO1j > div > div:nth-child(2) > div > div > div:nth-child(16) > div:nth-child(1)'
     personality_base = soup.select_one(tag)
     temp = personality_base
 
