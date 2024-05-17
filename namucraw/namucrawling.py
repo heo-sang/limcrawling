@@ -14,23 +14,29 @@ if response.status_code == 200:
     # 정보 바로 위 h4 값
     # tag = '#app > div > div.b0NjyPyV.rI1isyJ3 > div > div.ttkkkc5W > div > div.aKmVSIsT > div > div:nth-child(2) > div > div > h4:nth-child(15)'
     #태그 가변값임
-    tag = '#app > div > div.b0NjyPyV.rI1isyJ3 > div > div.ttkkkc5W > div > div.aKmVSIsT > div > div:nth-child(2) > div > div > div:nth-child(16) > div:nth-child(1)'
+    tag = '#app > div > div.b0NjyPyV.rI1isyJ3 > div > div.ttkkkc5W > div > div.aKmVSIsT > div > div:nth-child(2) > div > div > div:nth-child(26) > div:nth-child(1)'
     personality_base = soup.select_one(tag)
     temp = personality_base
 
-    content_list = []
-    for content in temp(text=True):
-       if content.strip():  # content가 공백이 아닌 경우에만 추가
-        content_list.append(content.strip() + '\n')
-    result = ''.join(content_list)
-    #print(result)
-    with open("t2.html", "w", encoding='utf8') as file:
-      file.write(result) 
-    with open("output2.html", "w", encoding='utf8') as file:
-      #file.write(str(temp)) # html 형식
-      file.write(temp.text) # content만 남기기
+# 특정 조건을 만족하는 요소 찾기 (예: id가 "target"인 요소)
+# target_element = soup.find(id="target")
 
-    
+# # 셀렉터 값을 생성하는 함수
+# def get_css_selector(element):
+#     path = []
+#     while element:
+#         siblings = element.find_previous_siblings(element.name)
+#         index = len(siblings)
+#         path.append(f"{element.name}:nth-of-type({index + 1})")
+#         element = element.parent
+#         if element.name == '[document]':
+#             break
+#     return ' > '.join(path[::-1])
+
+# # 셀렉터 값 가져오기
+# selector = get_css_selector(target_element)
+# print(selector)
+
     ### 안보이는 영역 제거
     pattern = re.compile(r'.*display:inline.*display:none.*')
     for element in temp.find_all():
@@ -41,12 +47,19 @@ if response.status_code == 200:
           element.clear()
           element.decompose()
 
+
+    ### 호흡같은 의미있는 값 따로 개행되는 거 지우기
+    color_spans = [span for span in temp.find_all('span') if 'color' in span.get('style', '')]
+    for span in color_spans:
+        span.unwrap()
+
+
     ### 죄악 img 태그에 content 추가
     sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
     for element in temp.find_all('img'):
       attrs = element.attrs
       # if element.name == 'img': # img 태그 찾는방법
-      if( 'UI' not in attrs['alt']) : continue
+      if 'UI' not in attrs['alt'] : continue
       for sin in sin_list:
         if sin not in attrs['alt'] : continue
         if element.parent.parent.parent.get_text().strip() == sin : continue
@@ -63,24 +76,68 @@ if response.status_code == 200:
     for element in temp.find_all('img'):
       attrs = element.attrs 
       for coin in range(1,9):
-        if ('alt' in attrs and 
-            attrs['alt'] == '림버스컴퍼니 '+ str(coin)) :
+        if ('alt' in attrs and attrs['alt'] == '림버스컴퍼니 '+ str(coin)) :
           element.insert(0,str(coin) + '코인') #이름 변경 예정
 
-    print()
+    ### 개행 제거
+    remove_newline = re.sub(r'>(\n)', r'>PLACEHOLDER', str(temp))
+    remove_newline = remove_newline.replace('\n', ' ')
+    remove_newline = remove_newline.replace('PLACEHOLDER', '\n')
+    temp =  BeautifulSoup(remove_newline, 'html.parser')
+
+
+    ### 리스트 형태로 변경
     content_list = []
     for content in temp(text=True):
+       print(content)
        if content.strip():  # content가 공백이 아닌 경우에만 추가
-        content_list.append(content.strip() + '\n')
+        content_list.append(content.strip())
 
-    # 안 사용하는 영역 제거
-    start = content_list.index('티켓 인사말\n')
-    end = content_list.index('스킬\n') # 바뀔수도
+
+    ### 안 사용하는 영역 제거
+    start = content_list.index('티켓 인사말')
+    end = content_list.index('스킬') # 바뀔수도
     del content_list[start:end]
-    panic_start = content_list.index('패닉 유형\n')
+    panic_start = content_list.index('패닉 유형')
     del content_list[panic_start:]
+    
 
-    result = ''.join(content_list)
+    
+    ### json 파일 제작과정
+    personality_json = {}
+    support_passive_now = content_list.index('서포트 패시브') + 1
+    personality_json['서포트 패시브'] = {
+        '이름': content_list[support_passive_now],
+        '죄악': content_list[support_passive_now + 1]
+    }
+    condition = content_list[support_passive_now + 2].split(' ')
+    personality_json['서포트 패시브'].update({
+        '수량': int(condition[0]),
+        '조건': condition[1]
+    })
+    personality_json['서포트 패시브']['내용'] = content_list[support_passive_now + 3:]
+    
+    buff_list = ['합 위력']
+    debuff_list = []
+    keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
+
+
+    ### keyword 검출 
+    temp_keywords = []
+    for item in personality_json['서포트 패시브']['내용']:
+      for keyword in keyword_list:
+        if keyword not in item: continue
+        temp_keywords.append(keyword)
+    temp_keywords = sorted(set(temp_keywords))
+    
+    personality_json['서포트 키워드'] = temp_keywords
+
+
+    with open('data.json', 'w', encoding='utf-8') as f:
+       json.dump(personality_json, f, ensure_ascii=False, indent=4)
+
+    
+    result = '\n'.join(content_list)
     #print(result)
     with open("t1.html", "w", encoding='utf8') as file:
       file.write(result) 
