@@ -11,14 +11,13 @@ response = requests.get(url)
 if response.status_code == 200:
     html = response.content.decode('utf-8','replace') 
     soup = BeautifulSoup(html, 'lxml')
+    # 정보 바로 위 h4 값
+    # tag = '#app > div > div.b0NjyPyV.rI1isyJ3 > div > div.ttkkkc5W > div > div.aKmVSIsT > div > div:nth-child(2) > div > div > h4:nth-child(15)'
     #태그 가변값임
-    tag = '#app > div > div._4S7sNrVH.U\+SPf0aA > div > div.AP\+iPcbn > div > div.qkFgeO1j > div > div:nth-child(2) > div > div > div:nth-child(16) > div:nth-child(1)'
+    tag = '#app > div > div.b0NjyPyV.rI1isyJ3 > div > div.ttkkkc5W > div > div.aKmVSIsT > div > div:nth-child(2) > div > div > div:nth-child(16) > div:nth-child(1)'
     personality_base = soup.select_one(tag)
     temp = personality_base
 
-
-
-    
     content_list = []
     for content in temp(text=True):
        if content.strip():  # content가 공백이 아닌 경우에만 추가
@@ -53,13 +52,11 @@ if response.status_code == 200:
         if element.parent.parent.parent.get_text().strip() == sin : continue
         element.insert(0,sin)
           
-    ### 스킬 앞에 번호 content 추가
-    skill_num = 1
+    ### 스킬 추가
     for element in temp.find_all('img'):
       attrs = element.attrs
-      if '스...' not in attrs['alt'] : continue
-      element.insert(0,str(skill_num) +'스킬') #임시로 이름은 고민좀
-      skill_num+=1
+      if '범용스킬' not in attrs['alt'] : continue
+      element.insert(0,'스킬') #임시로 이름은 고민좀
 
 
     ### 합이후 코인별 행동 추가
@@ -75,9 +72,16 @@ if response.status_code == 200:
     for content in temp(text=True):
        if content.strip():  # content가 공백이 아닌 경우에만 추가
         content_list.append(content.strip() + '\n')
+
+    # 안 사용하는 영역 제거
+    start = content_list.index('티켓 인사말\n')
+    end = content_list.index('스킬\n') # 바뀔수도
+    del content_list[start:end]
+    panic_start = content_list.index('패닉 유형\n')
+    del content_list[panic_start:]
+
     result = ''.join(content_list)
-    print(result)
-    print(type(result))
+    #print(result)
     with open("t1.html", "w", encoding='utf8') as file:
       file.write(result) 
     with open("yisang_seven_html.html", "w", encoding='utf8') as file:
