@@ -14,9 +14,9 @@ if response.status_code == 200:
     # 정보 바로 위 h4 값
     # tag = '#app > div > div.b0NjyPyV.rI1isyJ3 > div > div.ttkkkc5W > div > div.aKmVSIsT > div > div:nth-child(2) > div > div > h4:nth-child(15)'
     #태그 가변값임
-    tag = '#app > div > div.b0NjyPyV.rI1isyJ3 > div > div.ttkkkc5W > div > div.aKmVSIsT > div > div:nth-child(2) > div > div > div:nth-child(26) > div:nth-child(1)'
-    personality_base = soup.select_one(tag)
-    temp = personality_base
+    tag = '#app > div > div.CQbbVsrT.mgXk5wry > div > div.w69W06PT > div > div.hyj23f9g > div > div:nth-child(2) > div > div > div:nth-child(26) > div:nth-child(1)'
+    identity_base = soup.select_one(tag)
+    temp = identity_base
 
 # 특정 조건을 만족하는 요소 찾기 (예: id가 "target"인 요소)
 # target_element = soup.find(id="target")
@@ -101,21 +101,35 @@ if response.status_code == 200:
     panic_start = content_list.index('패닉 유형')
     del content_list[panic_start:]
     
-
     
     ### json 파일 제작과정
-    personality_json = {}
+    identity_json = {}
+
+
+    identity_name = re.sub(r'\[\s*(.*?)\s*\]', r'\1 ', content_list[0]).strip()
+    identity_json['수감자'] = identity_name.split('  ')[1]
+    identity_json['인격'] = identity_name
+
+    ### 세력리스트 이거 db같은데 중복안되게 저장하고 이미지랑 연결하면 좋을듯
+    faction_list = ['엄지','검지','중지','약지','소지',
+                    '하나','츠바이','트레스','시','섕크','리우','세븐','에잇','제뱌찌','디에치','외우피',
+                    '검계','피쿼드호','워더링하이츠'
+                    ] 
+    
+    ### 이미지 저장하는 코드 작성예정
+
+    ### 서포트 패시브
     support_passive_now = content_list.index('서포트 패시브') + 1
-    personality_json['서포트 패시브'] = {
+    identity_json['서포트 패시브'] = {
         '이름': content_list[support_passive_now],
         '죄악': content_list[support_passive_now + 1]
     }
     condition = content_list[support_passive_now + 2].split(' ')
-    personality_json['서포트 패시브'].update({
+    identity_json['서포트 패시브'].update({
         '수량': int(condition[0]),
         '조건': condition[1]
     })
-    personality_json['서포트 패시브']['내용'] = content_list[support_passive_now + 3:]
+    identity_json['서포트 패시브']['내용'] = content_list[support_passive_now + 3:]
     
     buff_list = ['합 위력']
     debuff_list = []
@@ -124,17 +138,17 @@ if response.status_code == 200:
 
     ### keyword 검출 
     temp_keywords = []
-    for item in personality_json['서포트 패시브']['내용']:
+    for item in identity_json['서포트 패시브']['내용']:
       for keyword in keyword_list:
         if keyword not in item: continue
         temp_keywords.append(keyword)
     temp_keywords = sorted(set(temp_keywords))
     
-    personality_json['서포트 키워드'] = temp_keywords
+    identity_json['서포트 키워드'] = temp_keywords
 
 
     with open('data.json', 'w', encoding='utf-8') as f:
-       json.dump(personality_json, f, ensure_ascii=False, indent=4)
+       json.dump(identity_json, f, ensure_ascii=False, indent=4)
 
     
     result = '\n'.join(content_list)
