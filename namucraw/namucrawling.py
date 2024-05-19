@@ -119,7 +119,19 @@ if response.status_code == 200:
     identity_json['최저속도'] = int(speed[0])
     identity_json['최고속도'] = int(speed[1])
     identity_json['수비레벨'] = int(content_list[status_idx+3].split('(')[0])
+    resistance_idx = content_list.index('내성 정보')
+    identity_json[content_list[resistance_idx+1]] = content_list[resistance_idx+2]
+    identity_json[content_list[resistance_idx+3]] = content_list[resistance_idx+4]
+    identity_json[content_list[resistance_idx+5]] = content_list[resistance_idx+6]
+
+
+    ### 기본정보
+    identity_json['소속'] = content_list[content_list.index('소속')+1]
+    grade = re.sub(r'\D', '', content_list[content_list.index('인격 등급')+1])
+    identity_json['등급'] = int(grade)
+    identity_json['출시시기'] = content_list[content_list.index('출시 시기')+1].replace('.', '-')
     
+
 
     ### 세력리스트 이거 db같은데 중복안되게 저장하고 이미지랑 연결하면 좋을듯
     faction_list = ['엄지','검지','중지','약지','소지',
@@ -132,7 +144,7 @@ if response.status_code == 200:
 
     ### 패시브
     passive_idx = content_list.index('패시브') + 1
-    identity_json['패시브'] = {
+    identity_json['패시브'] = { 
         '이름': content_list[passive_idx],
         '죄악': content_list[passive_idx + 1]
     }
