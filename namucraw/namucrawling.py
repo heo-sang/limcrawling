@@ -109,6 +109,17 @@ if response.status_code == 200:
     identity_name = re.sub(r'\[\s*(.*?)\s*\]', r'\1 ', content_list[0]).strip()
     identity_json['수감자'] = identity_name.split('  ')[1]
     identity_json['인격'] = identity_name
+    identity_json['동기화'] = 4
+    identity_json['레벨'] = 45
+
+    ### 스테이터스
+    status_idx = content_list.index('스테이터스') + 1
+    identity_json['체력'] = int(content_list[status_idx+1])
+    speed = content_list[status_idx+2].split(' - ')
+    identity_json['최저속도'] = int(speed[0])
+    identity_json['최고속도'] = int(speed[1])
+    identity_json['수비레벨'] = int(content_list[status_idx+3].split('(')[0])
+    
 
     ### 세력리스트 이거 db같은데 중복안되게 저장하고 이미지랑 연결하면 좋을듯
     faction_list = ['엄지','검지','중지','약지','소지',
@@ -118,24 +129,40 @@ if response.status_code == 200:
     
     ### 이미지 저장하는 코드 작성예정
 
-    ### 서포트 패시브
-    support_passive_now = content_list.index('서포트 패시브') + 1
-    identity_json['서포트 패시브'] = {
-        '이름': content_list[support_passive_now],
-        '죄악': content_list[support_passive_now + 1]
+
+    ### 패시브
+    passive_idx = content_list.index('패시브') + 1
+    identity_json['패시브'] = {
+        '이름': content_list[passive_idx],
+        '죄악': content_list[passive_idx + 1]
     }
-    condition = content_list[support_passive_now + 2].split(' ')
+    condition = content_list[passive_idx + 2].split(' ')
+    identity_json['패시브'].update({
+        '수량': int(condition[0]),
+        '조건': condition[1]
+    })
+    ###  패시브 여러개인 경우 고려예정
+    identity_json['패시브']['내용'] = content_list[passive_idx + 3:]
+
+
+    ### 서포트 패시브
+    support_passive_idx = content_list.index('서포트 패시브') + 1
+    identity_json['서포트 패시브'] = {
+        '이름': content_list[support_passive_idx],
+        '죄악': content_list[support_passive_idx + 1]
+    }
+    condition = content_list[support_passive_idx + 2].split(' ')
     identity_json['서포트 패시브'].update({
         '수량': int(condition[0]),
         '조건': condition[1]
     })
-    identity_json['서포트 패시브']['내용'] = content_list[support_passive_now + 3:]
+    identity_json['서포트 패시브']['내용'] = content_list[support_passive_idx + 3:]
     
     buff_list = ['합 위력']
     debuff_list = []
     keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
 
-
+    ### 본국검술 같은거도 어딘가에 저장해서 다 정리해야될듯
     ### keyword 검출 
     temp_keywords = []
     for item in identity_json['서포트 패시브']['내용']:
