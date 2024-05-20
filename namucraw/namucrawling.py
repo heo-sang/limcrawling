@@ -6,11 +6,15 @@ from bs4 import BeautifulSoup
 
 url = "https://namu.wiki/w/%EC%9D%B4%EC%83%81(Project%20Moon%20%EC%84%B8%EA%B3%84%EA%B4%80)/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 
-response = requests.get(url)
+#response = requests.get(url)
 
-if response.status_code == 200:
-    html = response.content.decode('utf-8','replace') 
+#if response.status_code == 200:
+if True:
+    f = open('./yisang.html', 'r', encoding='utf-8')
+    html = f.read()  
+    #html = response.content.decode('utf-8','replace') 
     soup = BeautifulSoup(html, 'lxml')
+    
     # 정보 바로 위 h4 값
     # tag = '#app > div > div.b0NjyPyV.rI1isyJ3 > div > div.ttkkkc5W > div > div.aKmVSIsT > div > div:nth-child(2) > div > div > h4:nth-child(15)'
     #태그 가변값임
@@ -24,25 +28,6 @@ if response.status_code == 200:
        .find_next_sibling()
        .find('div')
     )
-
-# 특정 조건을 만족하는 요소 찾기 (예: id가 "target"인 요소)
-# target_element = soup.find(id="target")
-
-# # 셀렉터 값을 생성하는 함수
-# def get_css_selector(element):
-#     path = []
-#     while element:
-#         siblings = element.find_previous_siblings(element.name)
-#         index = len(siblings)
-#         path.append(f"{element.name}:nth-of-type({index + 1})")
-#         element = element.parent
-#         if element.name == '[document]':
-#             break
-#     return ' > '.join(path[::-1])
-
-# # 셀렉터 값 가져오기
-# selector = get_css_selector(target_element)
-# print(selector)
 
     ### 안보이는 영역 제거
     pattern = re.compile(r'.*display:inline.*display:none.*')
@@ -75,16 +60,19 @@ if response.status_code == 200:
     ### 스킬 추가
     for element in temp.find_all('img'):
       attrs = element.attrs
-      if '범용스킬' not in attrs['alt'] : continue
-      element.insert(0,'스킬') #임시로 이름은 고민좀
+      #임시로 이름은 고민좀
+      if '범용스킬' in attrs['alt'] : 
+        element.insert(0,'스킬')
+      elif "림버스컴퍼니 코인" in attrs['alt']:
+        element.insert(0,'코인')
 
 
     ### 합이후 코인별 행동 추가
     for element in temp.find_all('img'):
       attrs = element.attrs 
-      for coin in range(1,9):
-        if ('alt' in attrs and attrs['alt'] == '림버스컴퍼니 '+ str(coin)) :
-          element.insert(0,str(coin) + '코인') #이름 변경 예정
+      for num in range(1,9):
+        if ('alt' in attrs and attrs['alt'] == '림버스컴퍼니 '+ str(num)) :
+          element.insert(0,str(num) + '코인') #이름 변경 예정
 
     ### 개행 제거
     remove_newline = re.sub(r'>(\n)', r'>PLACEHOLDER', str(temp))
@@ -155,6 +143,21 @@ if response.status_code == 200:
     # for idx, content in enumerate(content_list):
     #   while (content == '스킬' or content == '패시브') :
     #     idx+=1
+    skill_idx = content_list.index('스킬')
+    skill_num = 0
+    # while content_list[skill_idx] != '패시브':
+    #   skill_idx += 1
+
+    #   skill_num += 1
+    #   while (content_list[skill_idx] == '스킬' 
+    #          or content_list[skill_idx] == '패시브'):
+          
+    #       if idx >= len(content_list):
+    #           break
+    #       content = content_list[idx]
+    
+    # if idx >= len(content_list):
+    #   break
 
     ### 패시브
     passive_idx = content_list.index('패시브') + 1
