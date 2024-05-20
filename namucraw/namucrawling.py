@@ -8,6 +8,12 @@ from bs4 import BeautifulSoup
 def skill_assignment(identity_json, skill, key, value):
   identity_json['스킬'][skill].update({key:value})
 
+def get_value(skill_detail, target):
+  try:
+    return skill_detail[skill_detail.index(target)+1]
+  except ValueError:
+    return None 
+
 url = "https://namu.wiki/w/%EC%9D%B4%EC%83%81(Project%20Moon%20%EC%84%B8%EA%B3%84%EA%B4%80)/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 
 #response = requests.get(url)
@@ -112,7 +118,7 @@ if True:
     speed = content_list[status_idx+2].split(' - ')
     identity_json['최저속도'] = int(speed[0])
     identity_json['최고속도'] = int(speed[1])
-    identity_json['수비레벨'] = int(content_list[status_idx+3].split('(')[0])
+    identity_json['수비 레벨'] = int(content_list[status_idx+3].split('(')[0])
     resistance_idx = content_list.index('내성 정보')
     identity_json[content_list[resistance_idx+1]] = content_list[resistance_idx+2]
     identity_json[content_list[resistance_idx+3]] = content_list[resistance_idx+4]
@@ -159,9 +165,18 @@ if True:
 
       ### range로 바꿔야될듯 아닌가?
       coin_cnt = skill_detail.count('코인')
-      skill_assignment(identity_json, skill, '코인 개수',coin_cnt)
-      value = skill_detail.index('죄악 속성')+1
-      skill_assignment(identity_json, skill, '죄악 속성',skill_detail[value])
+      skill_assignment(identity_json, skill, '코인개수',coin_cnt)
+      name_idx = coin_cnt+1
+      skill_assignment(identity_json, skill, '스킬이름', skill_detail[name_idx])
+      attack_level = re.sub(r'\(.*?\)', '', skill_detail[name_idx+1]).strip()
+      skill_assignment(identity_json, skill, '공격레벨',int(attack_level))
+      # 공수를 if else로 나누기
+      #attack_type_idx = skill_detail.index('공격 유형')+1
+      
+      sin_type = get_value(skill_detail, '죄악 속성')
+      skill_assignment(identity_json, skill, '죄악속성', sin_type)
+
+
 
     # for idx, content in enumerate(content_list):
     #   while (content == '스킬' or content == '패시브') :
