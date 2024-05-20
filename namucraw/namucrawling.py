@@ -4,6 +4,10 @@ import html
 import re
 from bs4 import BeautifulSoup 
 
+
+def skill_assignment(identity_json, skill, key, value):
+  identity_json['스킬'][skill].update({key:value})
+
 url = "https://namu.wiki/w/%EC%9D%B4%EC%83%81(Project%20Moon%20%EC%84%B8%EA%B3%84%EA%B4%80)/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 
 #response = requests.get(url)
@@ -23,7 +27,7 @@ if True:
     temp = identity_base
     
     temp = (
-       soup.find(id="s-2.2.1", href='#toc')
+       soup.find(id="s-2.3.2", href='#toc')
        .parent
        .find_next_sibling()
        .find('div')
@@ -57,22 +61,18 @@ if True:
         if element.parent.parent.parent.get_text().strip() == sin : continue
         element.insert(0,sin)
           
-    ### 스킬 추가
+    ### 스킬, 코인, 코인별행동 추가
     for element in temp.find_all('img'):
       attrs = element.attrs
       #임시로 이름은 고민좀
       if '범용스킬' in attrs['alt'] : 
-        element.insert(0,'스킬')
-      elif "림버스컴퍼니 코인" in attrs['alt']:
-        element.insert(0,'코인')
+        element.insert(0, '스킬')
+      if "림버스컴퍼니 코인" == attrs['alt'] :
+        element.insert(0, '코인')
+      for num in range(1, 9):
+        if (attrs['alt'] == f'림버스컴퍼니 {num}') :
+          element.insert(0, f'{num}코인') #이름 변경 예정
 
-
-    ### 합이후 코인별 행동 추가
-    for element in temp.find_all('img'):
-      attrs = element.attrs 
-      for num in range(1,9):
-        if ('alt' in attrs and attrs['alt'] == '림버스컴퍼니 '+ str(num)) :
-          element.insert(0,str(num) + '코인') #이름 변경 예정
 
     ### 개행 제거
     remove_newline = re.sub(r'>(\n)', r'>PLACEHOLDER', str(temp))
@@ -84,7 +84,6 @@ if True:
     ### 리스트 형태로 변경
     content_list = []
     for content in temp(text=True):
-       print(content)
        if content.strip():  # content가 공백이 아닌 경우에만 추가
         content_list.append(content.strip())
 
@@ -139,12 +138,36 @@ if True:
 
 
     ### 스킬
+
     identity_json['스킬'] = {}
+    skill_idx_list =[]
+    skill_num = 0
+    for idx, value in enumerate(content_list) :
+      if value=='스킬' : skill_idx_list.append(idx)
+    skill_idx_list.append(content_list.index('패시브'))
+    for idx, value in enumerate(skill_idx_list[:-1]) : 
+      start = skill_idx_list[idx]
+      end = skill_idx_list[idx+1]
+      skill=''
+      skill_detail = content_list[start:end]
+      if '수비 유형' in skill_detail :
+        skill = '수비스킬'
+      else :
+        skill_num+=1
+        skill = f'공격스킬{skill_num}'
+      identity_json['스킬'][skill]={}
+
+      ### range로 바꿔야될듯 아닌가?
+      coin_cnt = skill_detail.count('코인')
+      skill_assignment(identity_json, skill, '코인 개수',coin_cnt)
+      value = skill_detail.index('죄악 속성')+1
+      skill_assignment(identity_json, skill, '죄악 속성',skill_detail[value])
+
     # for idx, content in enumerate(content_list):
     #   while (content == '스킬' or content == '패시브') :
     #     idx+=1
-    skill_idx = content_list.index('스킬')
-    skill_num = 0
+    # skill_idx = content_list.index('스킬')
+    # skill_num = 0
     # while content_list[skill_idx] != '패시브':
     #   skill_idx += 1
 
@@ -192,6 +215,8 @@ if True:
     keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
 
     ### 본국검술 같은거도 어딘가에 저장해서 다 정리해야될듯
+    ### [사용시], [적중시]  이런거, [~]로 <span style="color:색 에서 거르면 될듯
+    
     ### keyword 검출 
     temp_keywords = []
     for item in identity_json['서포트 패시브']['내용']:
@@ -208,7 +233,6 @@ if True:
 
     
     result = '\n'.join(content_list)
-    #print(result)
     with open("t1.html", "w", encoding='utf8') as file:
       file.write(result) 
     with open("yisang_seven_html.html", "w", encoding='utf8') as file:
