@@ -17,6 +17,13 @@ if response.status_code == 200:
     tag = '#app > div > div.CQbbVsrT.mgXk5wry > div > div.w69W06PT > div > div.hyj23f9g > div > div:nth-child(2) > div > div > div:nth-child(26) > div:nth-child(1)'
     identity_base = soup.select_one(tag)
     temp = identity_base
+    
+    temp = (
+       soup.find(id="s-2.2.1", href='#toc')
+       .parent
+       .find_next_sibling()
+       .find('div')
+    )
 
 # 특정 조건을 만족하는 요소 찾기 (예: id가 "target"인 요소)
 # target_element = soup.find(id="target")
@@ -130,7 +137,7 @@ if response.status_code == 200:
     grade = re.sub(r'\D', '', content_list[content_list.index('인격 등급')+1])
     identity_json['등급'] = int(grade)
     identity_json['출시시기'] = content_list[content_list.index('출시 시기')+1].replace('.', '-')
-    
+
 
 
     ### 세력리스트 이거 db같은데 중복안되게 저장하고 이미지랑 연결하면 좋을듯
@@ -141,6 +148,13 @@ if response.status_code == 200:
     
     ### 이미지 저장하는 코드 작성예정
 
+
+
+    ### 스킬
+    identity_json['스킬'] = {}
+    # for idx, content in enumerate(content_list):
+    #   while (content == '스킬' or content == '패시브') :
+    #     idx+=1
 
     ### 패시브
     passive_idx = content_list.index('패시브') + 1
