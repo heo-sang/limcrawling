@@ -170,11 +170,24 @@ if True:
       skill_assignment(identity_json, skill, '스킬이름', skill_detail[name_idx])
       attack_level = re.sub(r'\(.*?\)', '', skill_detail[name_idx+1]).strip()
       skill_assignment(identity_json, skill, '공격레벨',int(attack_level))
-      # 공수를 if else로 나누기
-      #attack_type_idx = skill_detail.index('공격 유형')+1
-      
+
+      action_type_key = ''
+      if '공격 유형' in skill_detail :
+        action_type_key = '공격 유형'
+      elif '수비 유형' in skill_detail :
+        action_type_key = '수비 유형'
+      action_type = get_value(skill_detail, action_type_key)
+      action_type_key = re.sub(r'\s+', '', action_type_key)
+      skill_assignment(identity_json, skill, action_type_key, action_type)
       sin_type = get_value(skill_detail, '죄악 속성')
       skill_assignment(identity_json, skill, '죄악속성', sin_type)
+      base_power = get_value(skill_detail, '스킬 위력')
+      skill_assignment(identity_json, skill, '스킬위력', int(base_power))
+      coin_power = re.sub(r'\D', '', get_value(skill_detail, '코인 위력'))
+      skill_assignment(identity_json, skill, '코인위력', int(coin_power))
+
+
+      
 
 
 
