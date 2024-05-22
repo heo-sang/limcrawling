@@ -163,7 +163,7 @@ if True:
         skill = f'공격스킬{skill_num}'
       identity_json['스킬'][skill]={}
 
-      ### range로 바꿔야될듯 아닌가?
+      ###나중에 공백 지우는 re 만들어서 일괄
       coin_cnt = skill_detail.count('코인')
       skill_assignment(identity_json, skill, '코인개수',coin_cnt)
       name_idx = coin_cnt+1
@@ -185,30 +185,24 @@ if True:
       skill_assignment(identity_json, skill, '스킬위력', int(base_power))
       coin_power = re.sub(r'\D', '', get_value(skill_detail, '코인 위력'))
       skill_assignment(identity_json, skill, '코인위력', int(coin_power))
-
+      attack_power = get_value(skill_detail, '공격 가중치')
+      if attack_power == '-' : attack_power = '1'
+      skill_assignment(identity_json, skill, '공격가중치', int(attack_power))
 
       
-
-
-
-    # for idx, content in enumerate(content_list):
-    #   while (content == '스킬' or content == '패시브') :
-    #     idx+=1
-    # skill_idx = content_list.index('스킬')
-    # skill_num = 0
-    # while content_list[skill_idx] != '패시브':
-    #   skill_idx += 1
-
-    #   skill_num += 1
-    #   while (content_list[skill_idx] == '스킬' 
-    #          or content_list[skill_idx] == '패시브'):
-          
-    #       if idx >= len(content_list):
-    #           break
-    #       content = content_list[idx]
-    
-    # if idx >= len(content_list):
-    #   break
+    ### 스타일 이거하나당 패시브 하나 margin-bottom:5px;padding:0px 10px;color:#ffcc99;letter-spacing:-1px;text-align:left;font-size:1.1em;background-image:linear-gradient(110deg, #996633 50%, transparent 50%, transparent 51%, #996633 51%, #996633 52%,transparent 52%, transparent 53%, #996633 53%, #996633 54%, transparent 54%, transparent 55%, #996633 55%, #996633 56%, transparent 56%)
+    identity_json['패시브'] = {}
+    passive_idx_list =[]
+    passive_num = 0
+    for idx, value in enumerate(content_list) :
+      if value=='패시브' : passive_idx_list.append(idx)
+    passive_idx_list.append(content_list.index('서포트 패시브'))
+    for idx, value in enumerate(passive_idx_list[:-1]) : 
+      start =passive_idx_list[idx]
+      end = passive_idx_list[idx+1]
+      passive=''
+      passive_detail = content_list[start:end]
+      print(f'{start} {end}')
 
     ### 패시브
     passive_idx = content_list.index('패시브') + 1
