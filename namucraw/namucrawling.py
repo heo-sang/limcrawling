@@ -93,7 +93,6 @@ if True:
        if content.strip():  # content가 공백이 아닌 경우에만 추가
         content_list.append(content.strip())
 
-    ### test
     ### 안 사용하는 영역 제거
     start = content_list.index('티켓 인사말')
     end = content_list.index('스킬') # 바뀔수도
@@ -251,7 +250,7 @@ if True:
 
 
     with open('data.json', 'w', encoding='utf-8') as f:
-       json.dump(identity_json, f, ensure_ascii=False, indent=4)
+       json.dump(identity_json, f, ensure_ascii=False, indent=2)
 
     
     result = '\n'.join(content_list)
