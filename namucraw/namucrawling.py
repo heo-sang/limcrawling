@@ -16,13 +16,13 @@ def get_value(skill_detail, target):
 
 url = "https://namu.wiki/w/%EC%9D%B4%EC%83%81(Project%20Moon%20%EC%84%B8%EA%B3%84%EA%B4%80)/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 
-#response = requests.get(url)
+response = requests.get(url)
 
-#if response.status_code == 200:
-if True:
+if response.status_code == 200:
+#if True:
     f = open('./yisang.html', 'r', encoding='utf-8')
-    html = f.read()  
-    #html = response.content.decode('utf-8','replace') 
+    #html = f.read()  
+    html = response.content.decode('utf-8','replace') 
     soup = BeautifulSoup(html, 'lxml')
     
     # 정보 바로 위 h4 값
@@ -188,6 +188,17 @@ if True:
       if attack_power == '-' : attack_power = '1'
       skill_assignment(identity_json, skill, '공격가중치', int(attack_power))
 
+
+      ### 코인별효과
+      identity_json['스킬'][skill]['코인별효과']={}
+      coin_action_list = skill_detail[skill_detail.index('[ 코인별 효과 ]'):]
+      coin_action_idx_list = []
+      pattern = re.compile(r'^[1-9]코인$')
+      coin_action_idx_list = [idx for idx, value in enumerate(coin_action_list) 
+                              if pattern.match(value)]
+      coin_action_idx_list.insert(0, 0)
+      #for idx, value in enumerate(coin_action_idx_list[:-1]) : 
+         
       
     ### 스타일 이거하나당 패시브 하나 margin-bottom:5px;padding:0px 10px;color:#ffcc99;letter-spacing:-1px;text-align:left;font-size:1.1em;background-image:linear-gradient(110deg, #996633 50%, transparent 50%, transparent 51%, #996633 51%, #996633 52%,transparent 52%, transparent 53%, #996633 53%, #996633 54%, transparent 54%, transparent 55%, #996633 55%, #996633 56%, transparent 56%)
     identity_json['패시브'] = {}
@@ -201,7 +212,6 @@ if True:
       end = passive_idx_list[idx+1]
       passive=''
       passive_detail = content_list[start:end]
-      print(f'{start} {end}')
 
     ### 패시브
     passive_idx = content_list.index('패시브') + 1
