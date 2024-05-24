@@ -192,13 +192,21 @@ if response.status_code == 200:
       ### 코인별효과
       identity_json['스킬'][skill]['코인별효과']={}
       coin_action_list = skill_detail[skill_detail.index('[ 코인별 효과 ]'):]
-      coin_action_idx_list = []
+      coin_action_idx_list = [0]
       pattern = re.compile(r'^[1-9]코인$')
-      coin_action_idx_list = [idx for idx, value in enumerate(coin_action_list) 
-                              if pattern.match(value)]
-      coin_action_idx_list.insert(0, 0)
-      #for idx, value in enumerate(coin_action_idx_list[:-1]) : 
-         
+      coin_action_idx_list.extend([idx for idx, value in enumerate(coin_action_list) 
+                              if pattern.match(value)])
+      coin_action_idx_list.append(len(coin_action_list))
+      for idx, value in enumerate(coin_action_idx_list[:-1]) : 
+        start = coin_action_idx_list[idx]
+        end = coin_action_idx_list[idx+1]
+        print(coin_action_list[start])
+        coin_num = re.sub(r'\D', '', coin_action_list[start])
+        if coin_num == '' :
+          coin_num = '0'
+        identity_json['스킬'][skill]['코인별효과'][coin_num] = [value for value in coin_action_list[start+1:end]]
+
+
       
     ### 스타일 이거하나당 패시브 하나 margin-bottom:5px;padding:0px 10px;color:#ffcc99;letter-spacing:-1px;text-align:left;font-size:1.1em;background-image:linear-gradient(110deg, #996633 50%, transparent 50%, transparent 51%, #996633 51%, #996633 52%,transparent 52%, transparent 53%, #996633 53%, #996633 54%, transparent 54%, transparent 55%, #996633 55%, #996633 56%, transparent 56%)
     identity_json['패시브'] = {}
