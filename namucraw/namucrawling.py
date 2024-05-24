@@ -38,6 +38,10 @@ if response.status_code == 200:
        .find_next_sibling()
        .find('div')
     )
+    unique_keyword_list = []
+    with open('temp_data/unique_keyword.json', 'r', encoding='utf8') as f:
+      unique_keyword_list = json.load(f)
+    keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
 
     ### 안보이는 영역 제거
     pattern = re.compile(r'.*display:inline.*display:none.*')
@@ -50,10 +54,14 @@ if response.status_code == 200:
           element.decompose()
 
 
+    identity_keywords = []
     ### 호흡같은 의미있는 값 따로 개행되는 거 지우기
-    color_spans = [span for span in temp.find_all('span') if 'color' in span.get('style', '')]
-    for span in color_spans:
-        span.unwrap()
+    for span in temp.find_all('span') : 
+      if 'color' not in span.get('style', '') : continue
+      temp_text = unique_keyword_list.get(span.text, span.text)
+      if(temp_text in keyword_list) : 
+        identity_keywords.append(temp_text)
+      span.unwrap()
 
 
     ### 죄악 img 태그에 content 추가
@@ -117,11 +125,12 @@ if response.status_code == 200:
     speed = content_list[status_idx+2].split(' - ')
     identity_json['최저속도'] = int(speed[0])
     identity_json['최고속도'] = int(speed[1])
-    identity_json['수비 레벨'] = int(content_list[status_idx+3].split('(')[0])
+    identity_json['수비레벨'] = int(content_list[status_idx+3].split('(')[0])
     resistance_idx = content_list.index('내성 정보')
-    identity_json[content_list[resistance_idx+1]] = content_list[resistance_idx+2]
-    identity_json[content_list[resistance_idx+3]] = content_list[resistance_idx+4]
-    identity_json[content_list[resistance_idx+5]] = content_list[resistance_idx+6]
+    identity_json['내성정보'] = {}
+    identity_json['내성정보'][content_list[resistance_idx+1]] = content_list[resistance_idx+2]
+    identity_json['내성정보'][content_list[resistance_idx+3]] = content_list[resistance_idx+4]
+    identity_json['내성정보'][content_list[resistance_idx+5]] = content_list[resistance_idx+6]
 
 
     ### 기본정보
@@ -131,12 +140,6 @@ if response.status_code == 200:
     identity_json['출시시기'] = content_list[content_list.index('출시 시기')+1].replace('.', '-')
 
 
-
-    ### 세력리스트 이거 db같은데 중복안되게 저장하고 이미지랑 연결하면 좋을듯
-    faction_list = ['엄지','검지','중지','약지','소지',
-                    '하나','츠바이','트레스','시','섕크','리우','세븐','에잇','제뱌찌','디에치','외우피',
-                    '검계','피쿼드호','워더링하이츠'
-                    ] 
     
     ### 이미지 저장하는 코드 작성예정
 
@@ -146,6 +149,8 @@ if response.status_code == 200:
 
     identity_json['스킬'] = {}
     skill_idx_list =[]
+    attack_type_list = []
+    sin_type_list = []
     skill_num = 0
     for idx, value in enumerate(content_list) :
       if value=='스킬' : skill_idx_list.append(idx)
@@ -179,6 +184,9 @@ if response.status_code == 200:
       action_type_key = re.sub(r'\s+', '', action_type_key)
       skill_assignment(identity_json, skill, action_type_key, action_type)
       sin_type = get_value(skill_detail, '죄악 속성')
+      if action_type_key =='공격유형' : 
+        attack_type_list.append(action_type)
+        sin_type_list.append(sin_type)
       skill_assignment(identity_json, skill, '죄악속성', sin_type)
       base_power = get_value(skill_detail, '스킬 위력')
       skill_assignment(identity_json, skill, '스킬위력', int(base_power))
@@ -200,12 +208,14 @@ if response.status_code == 200:
       for idx, value in enumerate(coin_action_idx_list[:-1]) : 
         start = coin_action_idx_list[idx]
         end = coin_action_idx_list[idx+1]
-        print(coin_action_list[start])
         coin_num = re.sub(r'\D', '', coin_action_list[start])
         if coin_num == '' :
           coin_num = '0'
         identity_json['스킬'][skill]['코인별효과'][coin_num] = [value for value in coin_action_list[start+1:end]]
 
+    identity_json['공격유형'] = sorted(set(attack_type_list))
+    identity_json['죄악속성'] = sorted(set(sin_type_list))
+    identity_json['키워드'] = sorted(set(identity_keywords))
 
       
     ### 스타일 이거하나당 패시브 하나 margin-bottom:5px;padding:0px 10px;color:#ffcc99;letter-spacing:-1px;text-align:left;font-size:1.1em;background-image:linear-gradient(110deg, #996633 50%, transparent 50%, transparent 51%, #996633 51%, #996633 52%,transparent 52%, transparent 53%, #996633 53%, #996633 54%, transparent 54%, transparent 55%, #996633 55%, #996633 56%, transparent 56%)
@@ -251,20 +261,19 @@ if response.status_code == 200:
     
     buff_list = ['합 위력']
     debuff_list = []
-    keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
 
     ### 본국검술 같은거도 어딘가에 저장해서 다 정리해야될듯
     ### [사용시], [적중시]  이런거, [~]로 <span style="color:색 에서 거르면 될듯
     
     ### keyword 검출 
-    temp_keywords = []
+    support_keywords = []
     for item in identity_json['서포트 패시브']['내용']:
       for keyword in keyword_list:
         if keyword not in item: continue
-        temp_keywords.append(keyword)
-    temp_keywords = sorted(set(temp_keywords))
+        support_keywords.append(keyword)
+    support_keywords = sorted(set(support_keywords))
     
-    identity_json['서포트 키워드'] = temp_keywords
+    identity_json['서포트 키워드'] = support_keywords
 
 
     with open('data.json', 'w', encoding='utf-8') as f:
