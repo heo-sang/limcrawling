@@ -3,6 +3,7 @@ import json
 import html
 import re
 from bs4 import BeautifulSoup 
+from data_processing import *
 
 
 def skill_assignment(identity_json, skill, key, value):
@@ -25,89 +26,43 @@ if response.status_code == 200:
     html = response.content.decode('utf-8','replace') 
     soup = BeautifulSoup(html, 'lxml')
     
-    # 정보 바로 위 h4 값
-    # tag = '#app > div > div.b0NjyPyV.rI1isyJ3 > div > div.ttkkkc5W > div > div.aKmVSIsT > div > div:nth-child(2) > div > div > h4:nth-child(15)'
-    #태그 가변값임
-    tag = '#app > div > div.CQbbVsrT.mgXk5wry > div > div.w69W06PT > div > div.hyj23f9g > div > div:nth-child(2) > div > div > div:nth-child(26) > div:nth-child(1)'
-    identity_base = soup.select_one(tag)
-    temp = identity_base
-    
-    temp = (
+    base_data = (
        soup.find(id="s-2.3.2", href='#toc')
        .parent
        .find_next_sibling()
        .find('div')
     )
-    unique_keyword_list = []
+
     with open('temp_data/unique_keyword.json', 'r', encoding='utf8') as f:
       unique_keyword_list = json.load(f)
     keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
+    sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
 
     ### 안보이는 영역 제거
-    pattern = re.compile(r'.*display:inline.*display:none.*')
-    for element in temp.find_all():
-      attrs = element.attrs
-      if 'style' not in attrs : continue
-      if (pattern.match(attrs['style']) 
-          or 'display:inline' not in attrs['style'] and 'display:none' in attrs['style']):
-          element.clear()
-          element.decompose()
+    remove_hidden_area(base_data)
 
+    ### 호흡같은 의미있는 값 인격 키워드에 추가하고 해당 태그 지우기
+    identity_keywords = find_keywords(base_data)
 
-    identity_keywords = []
-    ### 호흡같은 의미있는 값 따로 개행되는 거 지우기
-    for span in temp.find_all('span') : 
-      if 'color' not in span.get('style', '') : continue
-      temp_text = unique_keyword_list.get(span.text, span.text)
-      if(temp_text in keyword_list) : 
-        identity_keywords.append(temp_text)
-      span.unwrap()
-
-
-    ### 죄악 img 태그에 content 추가
-    sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
-    for element in temp.find_all('img'):
-      attrs = element.attrs
-      # if element.name == 'img': # img 태그 찾는방법
-      if 'UI' not in attrs['alt'] : continue
-      for sin in sin_list:
-        if sin not in attrs['alt'] : continue
-        if element.parent.parent.parent.get_text().strip() == sin : continue
-        element.insert(0,sin)
-          
-    ### 스킬, 코인, 코인별행동 추가
-    for element in temp.find_all('img'):
-      attrs = element.attrs
-      #임시로 이름은 고민좀
-      if '범용스킬' in attrs['alt'] : 
-        element.insert(0, '스킬')
-      if "림버스컴퍼니 코인" == attrs['alt'] :
-        element.insert(0, '코인')
-      for num in range(1, 9):
-        if (attrs['alt'] == f'림버스컴퍼니 {num}') :
-          element.insert(0, f'{num}코인') #이름 변경 예정
+    ### 스킬, 코인, 죄악 이미지 텍스트화
+    image_to_text(base_data)
 
 
     ### 개행 제거
-    remove_newline = re.sub(r'>(\n)', r'>PLACEHOLDER', str(temp))
+    remove_newline = re.sub(r'>(\n)', r'>PLACEHOLDER', str(base_data))
     remove_newline = remove_newline.replace('\n', ' ')
     remove_newline = remove_newline.replace('PLACEHOLDER', '\n')
-    temp =  BeautifulSoup(remove_newline, 'html.parser')
+    base_data =  BeautifulSoup(remove_newline, 'html.parser')
 
 
     ### 리스트 형태로 변경
     content_list = []
-    for content in temp(text=True):
+    for content in base_data(text=True):
        if content.strip():  # content가 공백이 아닌 경우에만 추가
         content_list.append(content.strip())
 
     ### 안 사용하는 영역 제거
-    start = content_list.index('티켓 인사말')
-    end = content_list.index('스킬') # 바뀔수도
-    del content_list[start:end]
-    panic_start = content_list.index('패닉 유형')
-    del content_list[panic_start:]
-    
+    remove_unused_data(content_list)
     
     ### json 파일 제작과정
     identity_json = {}
@@ -284,8 +239,7 @@ if response.status_code == 200:
     with open("t1.html", "w", encoding='utf8') as file:
       file.write(result) 
     with open("yisang_seven_html.html", "w", encoding='utf8') as file:
-      file.write(str(temp.prettify())) # html 형식
-      #file.write(temp.text) # content만 남기기
+      file.write(str(base_data.prettify())) # html 형식
     
 
 else : 
