@@ -5,7 +5,6 @@ import re
 from bs4 import BeautifulSoup 
 from data_processing import *
 
-
 def skill_assignment(identity_json, skill, key, value):
   identity_json['스킬'][skill].update({key:value})
 
@@ -16,16 +15,11 @@ def get_value(skill_detail, target):
     return None 
 
 url = "https://namu.wiki/w/%EC%9D%B4%EC%83%81(Project%20Moon%20%EC%84%B8%EA%B3%84%EA%B4%80)/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
-
 response = requests.get(url)
 
 if response.status_code == 200:
-#if True:
-    f = open('./yisang.html', 'r', encoding='utf-8')
-    #html = f.read()  
     html = response.content.decode('utf-8','replace') 
     soup = BeautifulSoup(html, 'lxml')
-    
     base_data = (
        soup.find(id="s-2.3.2", href='#toc')
        .parent
@@ -47,26 +41,17 @@ if response.status_code == 200:
     ### 스킬, 코인, 죄악 이미지 텍스트화
     image_to_text(base_data)
 
-
     ### 개행 제거
-    remove_newline = re.sub(r'>(\n)', r'>PLACEHOLDER', str(base_data))
-    remove_newline = remove_newline.replace('\n', ' ')
-    remove_newline = remove_newline.replace('PLACEHOLDER', '\n')
-    base_data =  BeautifulSoup(remove_newline, 'html.parser')
-
+    base_data = remove_whitespace(base_data)
 
     ### 리스트 형태로 변경
-    content_list = []
-    for content in base_data(text=True):
-       if content.strip():  # content가 공백이 아닌 경우에만 추가
-        content_list.append(content.strip())
+    content_list = html_to_list(base_data)
 
     ### 안 사용하는 영역 제거
     remove_unused_data(content_list)
     
     ### json 파일 제작과정
     identity_json = {}
-
 
     identity_name = re.sub(r'\[\s*(.*?)\s*\]', r'\1 ', content_list[0]).strip()
     identity_json['수감자'] = identity_name.split('  ')[1]

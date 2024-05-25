@@ -1,5 +1,7 @@
 import re
 import json
+import lxml
+from bs4 import BeautifulSoup
 
 
 
@@ -37,7 +39,7 @@ def find_keywords(base_data) :
     span.unwrap()
   return identity_keywords
 
-# 스킬, 코인, 죄악 이미지 텍스트화
+# 스킬, 코인, 죄악, 코인별효과 이미지 텍스트화
 def image_to_text(base_data) :
   sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
   for element in base_data.find_all('img'):
@@ -55,4 +57,18 @@ def image_to_text(base_data) :
     for num in range(1, 9):
       if (attrs['alt'] == f'림버스컴퍼니 {num}') :
         element.insert(0, f'{num}코인')    
-        
+
+# 특정 개행 제거
+def remove_whitespace(base_data):
+  remove_newline = re.sub(r'>(\n)', r'>PLACEHOLDER', str(base_data))
+  remove_newline = remove_newline.replace('\n', ' ')
+  remove_newline = remove_newline.replace('PLACEHOLDER', '\n')
+  return BeautifulSoup(remove_newline, 'lxml').find()
+
+# bs4에서 텍스트만 추출한 리스트 생성        
+def html_to_list(base_data):
+  content_list = []
+  for content in base_data(text=True):
+    if content.strip():  # content가 공백이 아닌 경우에만 추가
+      content_list.append(content.strip())
+  return content_list
