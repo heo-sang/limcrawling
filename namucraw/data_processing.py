@@ -72,3 +72,19 @@ def html_to_list(base_data):
     if content.strip():  # content가 공백이 아닌 경우에만 추가
       content_list.append(content.strip())
   return content_list
+
+# 코인별효과 추가
+def coin_action(skill_detail, skill , identity_json) :
+  identity_json['스킬'][skill]['코인별효과']={}
+  coin_action_list = skill_detail[skill_detail.index('[ 코인별 효과 ]'):]
+
+
+  coin_action_idx_list = [0]
+  pattern = re.compile(r'^[1-9]코인$')
+  coin_action_idx_list = [idx for idx, value in enumerate(coin_action_list) 
+                          if pattern.match(value)]
+  coin_action_idx_list = [0] + coin_action_idx_list + [len(coin_action_list)]
+  for start, end in zip(coin_action_idx_list[:-1], coin_action_idx_list[1:]):
+    coin_num = re.sub(r'\D', '', coin_action_list[start]) or '0'
+    identity_json['스킬'][skill]['코인별효과'][coin_num] = coin_action_list[start+1:end]
+  

@@ -137,22 +137,11 @@ if response.status_code == 200:
       skill_assignment(identity_json, skill, '공격가중치', int(attack_power))
 
 
-      ### 코인별효과
-      identity_json['스킬'][skill]['코인별효과']={}
-      coin_action_list = skill_detail[skill_detail.index('[ 코인별 효과 ]'):]
-      coin_action_idx_list = [0]
-      pattern = re.compile(r'^[1-9]코인$')
-      coin_action_idx_list.extend([idx for idx, value in enumerate(coin_action_list) 
-                              if pattern.match(value)])
-      coin_action_idx_list.append(len(coin_action_list))
-      for idx, value in enumerate(coin_action_idx_list[:-1]) : 
-        start = coin_action_idx_list[idx]
-        end = coin_action_idx_list[idx+1]
-        coin_num = re.sub(r'\D', '', coin_action_list[start])
-        if coin_num == '' :
-          coin_num = '0'
-        identity_json['스킬'][skill]['코인별효과'][coin_num] = [value for value in coin_action_list[start+1:end]]
 
+      ### 코인별효과
+      coin_action(skill_detail, skill, identity_json)
+      
+      
     identity_json['공격유형'] = sorted(set(attack_type_list))
     identity_json['죄악속성'] = sorted(set(sin_type_list))
     identity_json['키워드'] = sorted(set(identity_keywords))
