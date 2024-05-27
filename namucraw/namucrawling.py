@@ -5,14 +5,6 @@ import re
 from bs4 import BeautifulSoup 
 from data_processing import *
 
-def skill_assignment(identity_json, skill, key, value):
-  identity_json['스킬'][skill].update({key:value})
-
-def get_value(skill_detail, target):
-  try:
-    return skill_detail[skill_detail.index(target)+1]
-  except ValueError:
-    return None 
 
 url = "https://namu.wiki/w/%EC%9D%B4%EC%83%81(Project%20Moon%20%EC%84%B8%EA%B3%84%EA%B4%80)/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 response = requests.get(url)
@@ -31,7 +23,8 @@ if response.status_code == 200:
       unique_keyword_list = json.load(f)
     keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
     sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
-
+    attack_type_list = []
+    sin_type_list = []
     ### 안보이는 영역 제거
     remove_hidden_area(base_data)
 
@@ -51,35 +44,7 @@ if response.status_code == 200:
     remove_unused_data(content_list)
     
     ### json 파일 제작과정
-    identity_json = {}
-
-    identity_name = re.sub(r'\[\s*(.*?)\s*\]', r'\1 ', content_list[0]).strip()
-    identity_json['수감자'] = identity_name.split('  ')[1]
-    identity_json['인격'] = identity_name
-    identity_json['동기화'] = 4
-    identity_json['레벨'] = 45
-
-    ### 스테이터스
-    status_idx = content_list.index('스테이터스') + 1
-    identity_json['체력'] = int(content_list[status_idx+1])
-    speed = content_list[status_idx+2].split(' - ')
-    identity_json['최저속도'] = int(speed[0])
-    identity_json['최고속도'] = int(speed[1])
-    identity_json['수비레벨'] = int(content_list[status_idx+3].split('(')[0])
-    resistance_idx = content_list.index('내성 정보')
-    identity_json['내성정보'] = {}
-    identity_json['내성정보'][content_list[resistance_idx+1]] = content_list[resistance_idx+2]
-    identity_json['내성정보'][content_list[resistance_idx+3]] = content_list[resistance_idx+4]
-    identity_json['내성정보'][content_list[resistance_idx+5]] = content_list[resistance_idx+6]
-
-
-    ### 기본정보
-    identity_json['소속'] = content_list[content_list.index('소속')+1]
-    grade = re.sub(r'\D', '', content_list[content_list.index('인격 등급')+1])
-    identity_json['등급'] = int(grade)
-    identity_json['출시시기'] = content_list[content_list.index('출시 시기')+1].replace('.', '-')
-
-
+    identity_json = insert_basic_info(content_list)
     
     ### 이미지 저장하는 코드 작성예정
 
@@ -88,60 +53,8 @@ if response.status_code == 200:
     ### 스킬
 
     identity_json['스킬'] = {}
-    skill_idx_list =[]
-    attack_type_list = []
-    sin_type_list = []
-    skill_num = 0
-    for idx, value in enumerate(content_list) :
-      if value=='스킬' : skill_idx_list.append(idx)
-    skill_idx_list.append(content_list.index('패시브'))
-    for idx, value in enumerate(skill_idx_list[:-1]) : 
-      start = skill_idx_list[idx]
-      end = skill_idx_list[idx+1]
-      skill=''
-      skill_detail = content_list[start:end]
-      if '수비 유형' in skill_detail :
-        skill = '수비스킬'
-      else :
-        skill_num+=1
-        skill = f'공격스킬{skill_num}'
-      identity_json['스킬'][skill]={}
+    insert_skill_info(content_list, identity_json, attack_type_list, sin_type_list)
 
-      ###나중에 공백 지우는 re 만들어서 일괄
-      coin_cnt = skill_detail.count('코인')
-      skill_assignment(identity_json, skill, '코인개수',coin_cnt)
-      name_idx = coin_cnt+1
-      skill_assignment(identity_json, skill, '스킬이름', skill_detail[name_idx])
-      attack_level = re.sub(r'\(.*?\)', '', skill_detail[name_idx+1]).strip()
-      skill_assignment(identity_json, skill, '공격레벨',int(attack_level))
-
-      action_type_key = ''
-      if '공격 유형' in skill_detail :
-        action_type_key = '공격 유형'
-      elif '수비 유형' in skill_detail :
-        action_type_key = '수비 유형'
-      action_type = get_value(skill_detail, action_type_key)
-      action_type_key = re.sub(r'\s+', '', action_type_key)
-      skill_assignment(identity_json, skill, action_type_key, action_type)
-      sin_type = get_value(skill_detail, '죄악 속성')
-      if action_type_key =='공격유형' : 
-        attack_type_list.append(action_type)
-        sin_type_list.append(sin_type)
-      skill_assignment(identity_json, skill, '죄악속성', sin_type)
-      base_power = get_value(skill_detail, '스킬 위력')
-      skill_assignment(identity_json, skill, '스킬위력', int(base_power))
-      coin_power = re.sub(r'\D', '', get_value(skill_detail, '코인 위력'))
-      skill_assignment(identity_json, skill, '코인위력', int(coin_power))
-      attack_power = get_value(skill_detail, '공격 가중치')
-      if attack_power == '-' : attack_power = '1'
-      skill_assignment(identity_json, skill, '공격가중치', int(attack_power))
-
-
-
-      ### 코인별효과
-      coin_action(skill_detail, skill, identity_json)
-      
-      
     identity_json['공격유형'] = sorted(set(attack_type_list))
     identity_json['죄악속성'] = sorted(set(sin_type_list))
     identity_json['키워드'] = sorted(set(identity_keywords))
