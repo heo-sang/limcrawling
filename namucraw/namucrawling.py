@@ -5,13 +5,21 @@ import re
 from bs4 import BeautifulSoup 
 from data_processing import *
 
+sinner_list = ['이상','파우스트','돈키호테','로슈','뫼르소','홍루'
+               ,'히스클리프','이스마엘','로쟈','싱클레어','오티스','그레고르']
+for sinner in sinner_list:
+   url = f"https://namu.wiki/w/{sinner}(Project%20Moon%20%EC%84%B8%EA%B3%84%EA%B4%80)/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 
-url = "https://namu.wiki/w/%EC%9D%B4%EC%83%81(Project%20Moon%20%EC%84%B8%EA%B3%84%EA%B4%80)/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
+
+url = "https://namu.wiki/w/이상(Project%20Moon%20%EC%84%B8%EA%B3%84%EA%B4%80)/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 response = requests.get(url)
 
 if response.status_code == 200:
     html = response.content.decode('utf-8','replace') 
     soup = BeautifulSoup(html, 'lxml')
+    
+    identity_id_list = get_identity_list(soup)
+
     base_data = (
        soup.find(id="s-2.3.2", href='#toc')
        .parent
@@ -21,10 +29,12 @@ if response.status_code == 200:
 
     with open('temp_data/unique_keyword.json', 'r', encoding='utf8') as f:
       unique_keyword_list = json.load(f)
+
     keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
     sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
     attack_type_list = []
     sin_type_list = []
+
     ### 안보이는 영역 제거
     remove_hidden_area(base_data)
 
@@ -51,7 +61,6 @@ if response.status_code == 200:
 
 
     ### 스킬
-
     identity_json['스킬'] = {}
     insert_skill_info(content_list, identity_json, attack_type_list, sin_type_list)
 
@@ -106,28 +115,33 @@ if response.status_code == 200:
 
     ### 본국검술 같은거도 어딘가에 저장해서 다 정리해야될듯
     ### [사용시], [적중시]  이런거, [~]로 <span style="color:색 에서 거르면 될듯
+    ### 임시추가
+    ### span에서 처리해야될듯
+    basic_keyword_list = ['마비','취약','보호','신속','속박','합 위력','최종 위력','코인 위력'
+                          ,'수비 위력','피해량 증가','피해량','공격 레벨','방어 레벨','도발치'
+                          ,'체력 회복']
     
+    special_keyword_list = ['탄환','구더기','저주','못','약점 분석','광신','차원 균열'
+                            ,'파열 보호','결투 선포','1대1 대결','충전 역장','버림','탐구한 지식'
+                            ,'앙갚음 대상','저택의 메아리']
+    mentality_pattern = re.compile(r'정신력 \d+ (회복|감소)')
+
+
     ### keyword 검출 
     support_keywords = []
     for item in identity_json['서포트 패시브']['내용']:
       for keyword in keyword_list:
-        if keyword not in item: continue
-        support_keywords.append(keyword)
-    support_keywords = sorted(set(support_keywords))
-    
-    identity_json['서포트 키워드'] = support_keywords
-
+        if keyword in item: 
+           support_keywords.append(keyword)
+        
+    identity_json['서포트 키워드'] = sorted(set(support_keywords))
 
     with open('data.json', 'w', encoding='utf-8') as f:
-       json.dump(identity_json, f, ensure_ascii=False, indent=2)
-
-    
-    result = '\n'.join(content_list)
+      json.dump(identity_json, f, ensure_ascii=False, indent=2)    
     with open("t1.html", "w", encoding='utf8') as file:
-      file.write(result) 
+      file.write('\n'.join(content_list)) 
     with open("yisang_seven_html.html", "w", encoding='utf8') as file:
       file.write(str(base_data.prettify())) # html 형식
     
-
 else : 
     print(response.status_code)

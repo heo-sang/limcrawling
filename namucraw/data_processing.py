@@ -13,6 +13,11 @@ def get_value(skill_detail, target):
   except ValueError:
     return None 
 
+def get_identity_list(soup) :
+  pattern = re.compile(r'^s-2\.\d+\.\d')
+  elements = soup.find_all(id=pattern,  href='#toc')
+  return [element['id'] for element in elements]
+
 
 # 가려진 영역 제거
 def remove_hidden_area (base_data) :
@@ -136,6 +141,7 @@ def insert_skill_info(content_list, identity_json, attack_type_list, sin_type_li
     if action_type_key =='공격 유형' : 
       attack_type_list.append(action_type)
       sin_type_list.append(sin_type)
+ 
     skill_assignment(identity_json, skill, '죄악속성', sin_type)
     base_power = get_value(skill_detail, '스킬 위력')
     skill_assignment(identity_json, skill, '스킬위력', int(base_power))
