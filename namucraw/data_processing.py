@@ -74,6 +74,7 @@ def image_to_text(base_data) :
       if (attrs['alt'] == f'림버스컴퍼니 {num}') :
         element.insert(0, f'{num}코인')    
 
+# 패시브 텍스트 추가(서포트 패시브가 하나일 경우에만 동작)
 def insert_passive_text(base_data) :
   passive_elements = base_data.find_all(style='margin-bottom:5px;padding:0px 10px;color:#ffcc99;letter-spacing:-1px;text-align:left;font-size:1.1em;background-image:linear-gradient(110deg, #996633 50%, transparent 50%, transparent 51%, #996633 51%, #996633 52%,transparent 52%, transparent 53%, #996633 53%, #996633 54%, transparent 54%, transparent 55%, #996633 55%, #996633 56%, transparent 56%)')
   for element in passive_elements[:-1] :
@@ -174,6 +175,7 @@ def insert_coin_action(skill_detail, skill , identity_json) :
     coin_num = re.sub(r'\D', '', coin_action_list[start]) or '0'
     identity_json['스킬'][skill]['코인별효과'][coin_num] = coin_action_list[start+1:end]
 
+# 패시브 정보 추가
 def insert_passive_info(content_list, identity_json) : 
   passive_idx_list =[]
   passive_num = 0
@@ -195,3 +197,18 @@ def insert_passive_info(content_list, identity_json) :
         '조건': condition[1]
     })
     identity_json['패시브'][passive_num]['내용'] = passive_detail[4:]
+
+# 서포트 패시브 정보 추가
+def insert_support_passive_info(content_list, identity_json) :
+  support_passive_idx = content_list.index('서포트 패시브') + 1
+  identity_json['서포트 패시브'] = {
+      '이름': content_list[support_passive_idx],
+      '죄악': content_list[support_passive_idx + 1]
+  }
+  condition = content_list[support_passive_idx + 2].split(' ')
+  identity_json['서포트 패시브'].update({
+      '수량': int(condition[0]),
+      '조건': condition[1]
+  })
+  identity_json['서포트 패시브']['내용'] = content_list[support_passive_idx + 3:]
+    

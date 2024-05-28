@@ -75,19 +75,8 @@ if response.status_code == 200:
     identity_json['패시브'] = {}
     insert_passive_info(content_list, identity_json)
 
-
     ### 서포트 패시브
-    support_passive_idx = content_list.index('서포트 패시브') + 1
-    identity_json['서포트 패시브'] = {
-        '이름': content_list[support_passive_idx],
-        '죄악': content_list[support_passive_idx + 1]
-    }
-    condition = content_list[support_passive_idx + 2].split(' ')
-    identity_json['서포트 패시브'].update({
-        '수량': int(condition[0]),
-        '조건': condition[1]
-    })
-    identity_json['서포트 패시브']['내용'] = content_list[support_passive_idx + 3:]
+    insert_support_passive_info(content_list, identity_json)
     
     buff_list = ['합 위력']
     debuff_list = []
