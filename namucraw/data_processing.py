@@ -13,6 +13,7 @@ def get_value(skill_detail, target):
   except ValueError:
     return None 
 
+# 해당 수감자의 인격 리스트 추출
 def get_identity_list(soup) :
   pattern = re.compile(r'^s-2\.\d+\.\d')
   elements = soup.find_all(id=pattern,  href='#toc')
