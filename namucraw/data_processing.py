@@ -45,6 +45,8 @@ def find_keywords(base_data) :
   keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
   
   identity_keywords = []
+  support_passive_keywords = []
+  support_passive_element = base_data.find(text='서포트 패시브')
   for span in base_data.find_all('span') : 
     if 'color' not in span.get('style', '') : continue
     temp_text = unique_keyword_list.get(span.text, span.text)
@@ -71,6 +73,11 @@ def image_to_text(base_data) :
     for num in range(1, 9):
       if (attrs['alt'] == f'림버스컴퍼니 {num}') :
         element.insert(0, f'{num}코인')    
+
+def insert_passive_text(base_data) :
+  passive_elements = base_data.find_all(style='margin-bottom:5px;padding:0px 10px;color:#ffcc99;letter-spacing:-1px;text-align:left;font-size:1.1em;background-image:linear-gradient(110deg, #996633 50%, transparent 50%, transparent 51%, #996633 51%, #996633 52%,transparent 52%, transparent 53%, #996633 53%, #996633 54%, transparent 54%, transparent 55%, #996633 55%, #996633 56%, transparent 56%)')
+  for element in passive_elements[:-1] :
+    element.insert(0, '패시브')
 
 # 특정 개행 제거
 def remove_whitespace(base_data):
@@ -166,4 +173,25 @@ def insert_coin_action(skill_detail, skill , identity_json) :
   for start, end in zip(coin_action_idx_list[:-1], coin_action_idx_list[1:]):
     coin_num = re.sub(r'\D', '', coin_action_list[start]) or '0'
     identity_json['스킬'][skill]['코인별효과'][coin_num] = coin_action_list[start+1:end]
-  
+
+def insert_passive_info(content_list, identity_json) : 
+  passive_idx_list =[]
+  passive_num = 0
+  for idx, value in enumerate(content_list) :
+    if value=='패시브' : passive_idx_list.append(idx)
+  passive_idx_list.append(content_list.index('서포트 패시브'))
+  del passive_idx_list[0]
+  for start, end in zip(passive_idx_list[:-1], passive_idx_list[1:]):
+    passive_detail = content_list[start:end]
+    passive_num +=1
+    identity_json['패시브'][passive_num] = {}
+    identity_json['패시브'][passive_num] = { 
+        '이름': passive_detail[1],
+        '죄악': passive_detail[2]
+    }
+    condition = passive_detail[3].split(' ')
+    identity_json['패시브'][passive_num].update({
+        '수량': int(condition[0]),
+        '조건': condition[1]
+    })
+    identity_json['패시브'][passive_num]['내용'] = passive_detail[4:]

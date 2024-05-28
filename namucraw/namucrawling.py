@@ -10,7 +10,6 @@ sinner_list = ['이상','파우스트','돈키호테','로슈','뫼르소','홍�
 for sinner in sinner_list:
    url = f"https://namu.wiki/w/{sinner}(Project%20Moon%20%EC%84%B8%EA%B3%84%EA%B4%80)/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 
-
 url = "https://namu.wiki/w/이상(Project%20Moon%20%EC%84%B8%EA%B3%84%EA%B4%80)/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 response = requests.get(url)
 
@@ -41,8 +40,11 @@ if response.status_code == 200:
     ### 호흡같은 의미있는 값 인격 키워드에 추가하고 해당 태그 지우기
     identity_keywords = find_keywords(base_data)
 
-    ### 스킬, 코인, 죄악 이미지 텍스트화
+    ### 스킬, 코인, 죄악 텍스트화
     image_to_text(base_data)
+
+    ### 패시브 텍스트 추가
+    insert_passive_text(base_data)
 
     ### 개행 제거
     base_data = remove_whitespace(base_data)
@@ -71,30 +73,7 @@ if response.status_code == 200:
       
     ### 스타일 이거하나당 패시브 하나 margin-bottom:5px;padding:0px 10px;color:#ffcc99;letter-spacing:-1px;text-align:left;font-size:1.1em;background-image:linear-gradient(110deg, #996633 50%, transparent 50%, transparent 51%, #996633 51%, #996633 52%,transparent 52%, transparent 53%, #996633 53%, #996633 54%, transparent 54%, transparent 55%, #996633 55%, #996633 56%, transparent 56%)
     identity_json['패시브'] = {}
-    passive_idx_list =[]
-    passive_num = 0
-    for idx, value in enumerate(content_list) :
-      if value=='패시브' : passive_idx_list.append(idx)
-    passive_idx_list.append(content_list.index('서포트 패시브'))
-    for idx, value in enumerate(passive_idx_list[:-1]) : 
-      start =passive_idx_list[idx]
-      end = passive_idx_list[idx+1]
-      passive=''
-      passive_detail = content_list[start:end]
-
-    ### 패시브
-    passive_idx = content_list.index('패시브') + 1
-    identity_json['패시브'] = { 
-        '이름': content_list[passive_idx],
-        '죄악': content_list[passive_idx + 1]
-    }
-    condition = content_list[passive_idx + 2].split(' ')
-    identity_json['패시브'].update({
-        '수량': int(condition[0]),
-        '조건': condition[1]
-    })
-    ###  패시브 여러개인 경우 고려예정
-    identity_json['패시브']['내용'] = content_list[passive_idx + 3:]
+    insert_passive_info(content_list, identity_json)
 
 
     ### 서포트 패시브
@@ -118,12 +97,12 @@ if response.status_code == 200:
     ### 임시추가
     ### span에서 처리해야될듯
     basic_keyword_list = ['마비','취약','보호','신속','속박','합 위력','최종 위력','코인 위력'
-                          ,'수비 위력','피해량 증가','피해량','공격 레벨','방어 레벨','도발치'
-                          ,'체력 회복']
-    
+                          ,'수비 위력','기본 위력','피해량','공격 레벨','방어 레벨'
+                          ,'도발치','체력 회복']
+
     special_keyword_list = ['탄환','구더기','저주','못','약점 분석','광신','차원 균열'
-                            ,'파열 보호','결투 선포','1대1 대결','충전 역장','버림','탐구한 지식'
-                            ,'앙갚음 대상','저택의 메아리']
+                            ,'파열 보호','결투 선포','충전 역장','버림','탐구한 지식'
+                            ,'앙갚음 대상']
     mentality_pattern = re.compile(r'정신력 \d+ (회복|감소)')
 
 
