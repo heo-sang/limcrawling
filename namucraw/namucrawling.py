@@ -15,7 +15,7 @@ response = requests.get(url)
 
 if response.status_code == 200:
   html = response.content.decode('utf-8','replace') 
-  soup = BeautifulSoup(html, 'lxml')
+  soup = BeautifulSoup(html, 'html.parser')
   
   identity_id_list = get_identity_list(soup)
   base_data = (
@@ -38,8 +38,9 @@ if response.status_code == 200:
   sin_type_list = []
   ### 안보이는 영역 제거
   remove_hidden_area(base_data)
-  ### 호흡같은 의미있는 값 인격 키워드에 추가하고 해당 태그 지우기
-  identity_keywords = find_keywords(base_data)
+  ### 호흡같은 의미있는 값 인격 키워드에 추가하고 해당 태그 지우기(대표, 범용, 특별)
+  identity_keyword_dict, support_keyword_dict = find_keywords(base_data)
+
   ### 스킬, 코인, 죄악 텍스트화
   image_to_text(base_data)
   ### 패시브 텍스트 추가
@@ -60,15 +61,13 @@ if response.status_code == 200:
   
   identity_json['공격유형'] = sorted(set(attack_type_list))
   identity_json['죄악속성'] = sorted(set(sin_type_list))
-  identity_json['키워드'] = sorted(set(identity_keywords))
-    
+  identity_json['키워드'] = identity_keyword_dict
+  identity_json['서포트 키워드'] = support_keyword_dict
   identity_json['패시브'] = {}
   insert_passive_info(content_list, identity_json)
   ### 서포트 패시브
   insert_support_passive_info(content_list, identity_json)
   
-  buff_list = ['합 위력']
-  debuff_list = []
   ### 본국검술 같은거도 어딘가에 저장해서 다 정리해야될듯
   ### [사용시], [적중시]  이런거, [~]로 <span style="color:색 에서 거르면 될듯
   ### 임시추가
@@ -78,13 +77,12 @@ if response.status_code == 200:
 
   mentality_pattern = re.compile(r'정신력 \d+ 회복')
   ### keyword 검출 
-  support_keywords = []
-  for item in identity_json['서포트 패시브']['내용']:
-    for keyword in keyword_list:
-      if keyword in item: 
-         support_keywords.append(keyword)
+  
+  # for item in identity_json['서포트 패시브']['내용']:
+  #   for keyword in keyword_list:
+  #     if keyword in item: 
+  #        support_keywords.append(keyword)
       
-  identity_json['서포트 키워드'] = sorted(set(support_keywords))
   with open('data.json', 'w', encoding='utf-8') as f:
     json.dump(identity_json, f, ensure_ascii=False, indent=2)    
   with open("t1.html", "w", encoding='utf8') as file:

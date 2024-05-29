@@ -41,20 +41,50 @@ def remove_unused_data(identity_data) :
   
 # 호흡같은 의미있는 값 찾고 해당 태그 지우기
 def find_keywords(base_data) :
+  target_element = base_data.find('strong', text='서포트 패시브')
+
+  before_support_html = ''.join(str(sibling) for sibling in target_element.parent.parent.find_previous_siblings())
+  before_support_soup = BeautifulSoup(before_support_html, 'html.parser')
+  identity_keyword_dict = insert_keyword(before_support_soup)
+
+  support_html = ''.join(str(sibling) for sibling in target_element.parent.find_next_siblings())
+  support_soup = BeautifulSoup(support_html, 'lxml')
+  support_keyword_dict = insert_keyword(support_soup)
+
+  for span in base_data.find_all('span'):
+    if 'color' not in span.get('style', '') : continue
+    span.unwrap()
+  return identity_keyword_dict, support_keyword_dict
+
+### 키워드 딕셔너리에 값 추가
+def insert_keyword(soup) :
   with open('temp_data/unique_keyword.json', 'r', encoding='utf8') as f:
     unique_keyword_list = json.load(f)
   keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
+  special_keyword_list = ['탄환','구더기','저주','못','약점 분석','광신','차원 균열'
+                          ,'파열 보호','결투 선포','충전 역장','버림','탐구한 지식'
+                          ,'앙갚음 대상','홍매화','흑염']
+  colored_basic_keyword_list = ['마비','취약','보호','신속','속박'
+                                ,'도발치','공격 레벨','방어 레벨','피해량 증가']
   
-  identity_keywords = []
-  support_passive_keywords = []
-  support_passive_element = base_data.find(text='서포트 패시브')
-  for span in base_data.find_all('span') : 
+  keyword_dict = {'대표':[],'기본':[],'특별':[]}
+  for span in soup.find_all('span') : 
     if 'color' not in span.get('style', '') : continue
-    temp_text = unique_keyword_list.get(span.text, span.text)
-    if(temp_text in keyword_list) : 
-      identity_keywords.append(temp_text)
-    span.unwrap()
-  return identity_keywords
+    keyword_text = span.text
+    if keyword_text in keyword_list :
+      keyword_dict['대표'].append(keyword_text)
+    if keyword_text in colored_basic_keyword_list :
+      keyword_dict['기본'].append(keyword_text)
+    if keyword_text in special_keyword_list :
+      keyword_dict['특별'].extend(keyword_text)
+    temp_keyword = unique_keyword_list.get(keyword_text, keyword_text)
+    if temp_keyword in keyword_list :
+      keyword_dict['대표'].append(temp_keyword)
+  keyword_dict['대표'] = sorted(set(keyword_dict['대표']))
+  keyword_dict['기본'] = sorted(set(keyword_dict['기본']))
+  keyword_dict['특별'] = sorted(set(keyword_dict['특별'])) 
+  return keyword_dict
+
 
 # 스킬, 코인, 죄악, 코인별효과 이미지 텍스트화
 def image_to_text(base_data) :
