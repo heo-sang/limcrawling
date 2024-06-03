@@ -78,7 +78,7 @@ def insert_keyword(soup) :
     if keyword_text in colored_basic_keyword_list :
       keyword_dict['기본'].append(keyword_text)
     if keyword_text in special_keyword_list :
-      keyword_dict['특별'].extend(keyword_text)
+      keyword_dict['특별'].append(keyword_text)
     temp_keyword = unique_keyword_list.get(keyword_text, keyword_text)
     if temp_keyword in keyword_list :
       keyword_dict['대표'].append(temp_keyword)
