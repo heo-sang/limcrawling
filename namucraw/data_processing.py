@@ -80,7 +80,7 @@ def insert_keyword(soup) :
     if keyword_text in special_keyword_list :
       keyword_dict['특별'].append(keyword_text)
     temp_keyword = unique_keyword_list.get(keyword_text, keyword_text)
-    if temp_keyword in keyword_list :
+    if temp_keyword in keyword_list : 
       keyword_dict['대표'].append(temp_keyword)
   keyword_dict['대표'] = sorted(set(keyword_dict['대표']))
   keyword_dict['기본'] = sorted(set(keyword_dict['기본']))
@@ -159,10 +159,12 @@ def insert_skill_info(content_list, identity_json, attack_type_list, sin_type_li
                       if value == '스킬']
   skill_idx_list.append(content_list.index('패시브'))
   skill_num = 0
+  defense_skill_num = 0
   for start, end in zip(skill_idx_list[:-1], skill_idx_list[1:]):
     skill_detail = content_list[start:end]
     if '수비 유형' in skill_detail:
-        skill = '수비스킬'
+        defense_skill_num += 1
+        skill = f'수비스킬{defense_skill_num}'
     else:
         skill_num += 1
         skill = f'공격스킬{skill_num}'
