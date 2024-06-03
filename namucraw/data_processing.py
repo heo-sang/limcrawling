@@ -3,6 +3,8 @@ import json
 import lxml
 from bs4 import BeautifulSoup
 
+sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
+
 
 def skill_assignment(identity_json, skill, key, value):
   identity_json['스킬'][skill].update({key:value})
@@ -192,6 +194,9 @@ def insert_skill_info(content_list, identity_json, attack_type_list, sin_type_li
     ### 코인별효과
     insert_coin_action(skill_detail, skill, identity_json)
 
+
+
+
 # 코인별효과 추가
 def insert_coin_action(skill_detail, skill , identity_json) :
   identity_json['스킬'][skill]['코인별효과']={}
@@ -218,17 +223,17 @@ def insert_passive_info(content_list, identity_json) :
     passive_detail = content_list[start:end]
     passive_num +=1
     identity_json['패시브'][passive_num] = {}
-    identity_json['패시브'][passive_num] = { 
-        '이름': passive_detail[1],
-        '죄악': passive_detail[2]
-    }
-    condition = passive_detail[3].split(' ')
-    identity_json['패시브'][passive_num].update({
-        '수량': int(condition[0]),
-        '조건': condition[1]
-    })
-    identity_json['패시브'][passive_num]['내용'] = passive_detail[4:]
-
+    identity_json['패시브'][passive_num]['이름'] = passive_detail[1]
+    if passive_detail[2] in sin_list :
+      identity_json['패시브'][passive_num]['죄악'] = passive_detail[2]
+      condition = passive_detail[3].split(' ')
+      identity_json['패시브'][passive_num].update({
+          '수량': int(condition[0]),
+          '조건': condition[1]
+      })
+      identity_json['패시브'][passive_num]['내용'] = passive_detail[4:]
+    else :
+      identity_json['패시브'][passive_num]['내용'] = passive_detail[2:]
 # 서포트 패시브 정보 추가
 def insert_support_passive_info(content_list, identity_json) :
   support_passive_idx = content_list.index('서포트 패시브') + 1
@@ -242,4 +247,7 @@ def insert_support_passive_info(content_list, identity_json) :
       '조건': condition[1]
   })
   identity_json['서포트 패시브']['내용'] = content_list[support_passive_idx + 3:]
-    
+
+def change_sin_by_affiliation(affiliation, identity_keyword_dict) :
+  if affiliation == '약지' :
+    identity_keyword_dict['대표'] = ['출혈']

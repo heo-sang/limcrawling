@@ -19,7 +19,7 @@ if response.status_code == 200:
   
   identity_id_list = get_identity_list(soup)
   base_data = (
-     soup.find(id="s-2.3.2", href='#toc')
+     soup.find(id="s-2.3.4", href='#toc')
      .parent
      .find_next_sibling()
      .find('div')
@@ -40,6 +40,7 @@ if response.status_code == 200:
   remove_hidden_area(base_data)
   ### 호흡같은 의미있는 값 인격 키워드에 추가하고 해당 태그 지우기(대표, 범용, 특별)
   identity_keyword_dict, support_keyword_dict = find_keywords(base_data)
+  
 
   ### 스킬, 코인, 죄악 텍스트화
   image_to_text(base_data)
@@ -58,7 +59,8 @@ if response.status_code == 200:
   ### 스킬
   identity_json['스킬'] = {}
   insert_skill_info(content_list, identity_json, attack_type_list, sin_type_list)
-  
+  change_sin_by_affiliation(identity_json['소속'], identity_keyword_dict)
+
   identity_json['공격유형'] = sorted(set(attack_type_list))
   identity_json['죄악속성'] = sorted(set(sin_type_list))
   identity_json['키워드'] = identity_keyword_dict
