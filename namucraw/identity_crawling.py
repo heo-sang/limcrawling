@@ -39,9 +39,6 @@ if response.status_code == 200:
      .find('div')
   )
 
-  with open('temp_data/unique_keyword.json', 'r', encoding='utf8') as f:
-    unique_keyword_list = json.load(f)
-  
   ### 안보이는 영역 제거
   remove_hidden_area(base_data)
   ### 호흡같은 의미있는 값 인격 키워드에 추가하고 해당 태그 지우기(대표, 범용, 특별)
@@ -67,8 +64,8 @@ if response.status_code == 200:
   attack_type_list, sin_type_list = insert_skill_info(content_list, identity_json)
   change_sin_by_affiliation(identity_json['소속'], identity_keyword_dict)
  
+  ### 패시브 정보
   insert_passive_info(content_list, identity_json)
-  ### 서포트 패시브
   insert_support_passive_info(content_list, identity_json)
   
   ### 본국검술 같은거도 어딘가에 저장해서 다 정리해야될듯
@@ -77,15 +74,9 @@ if response.status_code == 200:
   basic_keyword_list = ['합 위력','최종 위력','코인 위력','수비 위력'
                         ,'기본 위력','피해량 +','체력 회복']
 
-  mentality_pattern = re.compile(r'정신력 \d+ 회복')
-
   ### keyword 검출 
   find_rest_keyword(identity_json, identity_keyword_dict, support_keyword_dict)
-  # for item in identity_json['서포트 패시브']['내용']:
-  #   for keyword in keyword_list:
-  #     if keyword in item: 
-  #        support_keywords.append(keyword)
-      
+  
   identity_json['공격유형'] = sorted(set(attack_type_list))
   identity_json['죄악속성'] = sorted(set(sin_type_list))
   identity_json['키워드'] = identity_keyword_dict

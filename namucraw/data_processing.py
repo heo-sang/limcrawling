@@ -12,7 +12,11 @@ special_keyword_list = ['탄환','저주','못','약점 분석','광신','차원
                         ,'앙갚음 대상','홍매화','흑염','저택의 메아리','1대1 대결']
 colored_basic_keyword_list = ['마비','취약','보호','신속','속박'
                               ,'도발치','공격 레벨','방어 레벨','피해량 증가']
-  
+unique_keyword_dict = {
+  "못": "출혈",
+  "홍매화" : "출혈",
+  "흑염" : "화상"
+}
 
 def skill_assignment(identity_json, skill, key, value):
   identity_json['스킬'][skill].update({key:value})
@@ -80,9 +84,6 @@ def find_keywords(base_data) :
 
 ### 키워드 딕셔너리에 값 추가
 def insert_keyword(soup) :
-  with open('temp_data/unique_keyword.json', 'r', encoding='utf8') as f:
-    unique_keyword_list = json.load(f)
-
   keyword_dict = {'대표':[],'기본':[],'특별':[]}
   for span in soup.find_all('span') : 
     if 'color' not in span.get('style', '') : continue
@@ -93,7 +94,7 @@ def insert_keyword(soup) :
       keyword_dict['기본'].append(keyword_text)
     if keyword_text in special_keyword_list :
       keyword_dict['특별'].append(keyword_text)
-    temp_keyword = unique_keyword_list.get(keyword_text, keyword_text)
+    temp_keyword = unique_keyword_dict.get(keyword_text, keyword_text)
     if temp_keyword in keyword_list : 
       keyword_dict['대표'].append(temp_keyword)
   keyword_dict['대표'] = sorted(set(keyword_dict['대표']))
