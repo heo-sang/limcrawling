@@ -3,6 +3,7 @@ import json
 import lxml
 from bs4 import BeautifulSoup
 import os
+import os.path
 
 sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
 keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
@@ -42,12 +43,15 @@ def remove_hidden_area (base_data) :
 
 # 인격 이미지 저장
 def save_identity_image(base_data, identity_prefix, identity_name) :
+  image_path = f'./image/identity/뫼르소/{identity_name}.webp'
   for temp_image in base_data.find_all('img') :
     attrs = temp_image.attrs
     if 'alt' not in attrs : continue
     if identity_prefix in attrs['alt'] :
-      os.system(f"curl https:{attrs['src']} > ./image/identity/뫼르소/{identity_name}.webp")
-      break
+      if not os.path.exists(image_path) :
+        print(os.path.isfile(image_path))
+        os.system(f"curl https:{attrs['src']} > {image_path}")
+        break
 
 # 사용하지 않는 영역 제거
 def remove_unused_data(identity_data) :
@@ -140,6 +144,7 @@ def html_to_list(base_data):
 
 # 기본 정보추가
 def insert_basic_info(content_list) :
+  # 수감자하고 인격 밖에서 해도될듯
   identity_json = {}
   identity_name = re.sub(r'\[\s*(.*?)\s*\]', r'\1 ', content_list[0]).strip()
   identity_json['수감자'] = identity_name.split('  ')[1]
