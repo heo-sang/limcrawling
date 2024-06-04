@@ -4,6 +4,9 @@ import html
 import re
 from bs4 import BeautifulSoup 
 from data_processing import *
+import urllib.request
+import os
+import time
 
 sinner_list = ['이상','파우스트','돈키호테','로슈','뫼르소','홍루'
                ,'히스클리프','이스마엘','로쟈','싱클레어','오티스','그레고르']
@@ -14,7 +17,10 @@ sinner_list = ['이상','파우스트','돈키호테','로슈','뫼르소','홍�
 #   if response.status_code != 200:
 #     url = f"https://namu.wiki/w/{sinner}/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 #     response = requests.get(url)
-
+#   if not os.path.exists(f'./image/identity/{sinner}'):
+#       os.makedirs(f'./image/identity/{sinner}')
+# start = time.time()
+# time_cost = time.time()-start
 url = "https://namu.wiki/w/뫼르소/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 response = requests.get(url)
 if response.status_code == 200:
@@ -22,8 +28,13 @@ if response.status_code == 200:
   soup = BeautifulSoup(html, 'html.parser')
   
   identity_id_list = get_identity_list(soup)
+  name_soup = soup.find(id="s-2.3.4", href='#toc')
+  identity_prefix = name_soup.find_next_sibling()
+  identity_prefix.select_one('.wiki-edit-section').decompose()
+  identity_prefix = identity_prefix.text
+  identity_name = f"{identity_prefix} 뫼르소".replace(' ','_')
   base_data = (
-     soup.find(id="s-2.3.4", href='#toc')
+     name_soup
      .parent
      .find_next_sibling()
      .find('div')
@@ -47,7 +58,13 @@ if response.status_code == 200:
   identity_keyword_dict, support_keyword_dict = find_keywords(base_data)
   
   ### 이미지 저장하는 코드 작성예정
-
+  for temp_image in base_data.find_all('img') :
+    attrs = temp_image.attrs
+    if 'alt' not in attrs : continue
+    if identity_prefix in attrs['alt'] :
+      print(identity_name)
+      os.system(f"curl https:{attrs['src']} > ./image/identity/뫼르소/{identity_name}.webp")
+      break
   ### 스킬, 코인, 죄악 텍스트화
   image_to_text(base_data)
   ### 패시브 텍스트 추가
