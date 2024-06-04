@@ -215,6 +215,7 @@ def insert_coin_action(skill_detail, skill , identity_json) :
 
 # 패시브 정보 추가
 def insert_passive_info(content_list, identity_json) : 
+  identity_json['패시브'] = {}
   passive_idx_list =[]
   passive_num = 0
   for idx, value in enumerate(content_list) :
