@@ -278,6 +278,9 @@ def find_rest_keyword(identity_json, identity_keyword_dict, support_keyword_dict
   mentality_pattern = re.compile(r'.*정신력 \d+ 회복.*')
   rest_keyword_list = ['공격 가중치']
 
+  basic_keyword_list = ['합 위력','최종 위력','코인 위력','수비 위력'
+                       ,'기본 위력','피해량 +','체력 회복']
+
   for key, value in identity_json['스킬'].items() :
     for k2, v2 in value.items():
       if k2 !='코인별효과' : continue

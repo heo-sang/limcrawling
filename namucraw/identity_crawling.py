@@ -16,8 +16,6 @@ sinner_list = ['이상','파우스트','돈키호테','로슈','뫼르소','홍�
 #   if response.status_code != 200:
 #     url = f"https://namu.wiki/w/{sinner}/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
 #     response = requests.get(url)
-#   if not os.path.exists(f'./image/identity/{sinner}'):
-#       os.makedirs(f'./image/identity/{sinner}')
 # start = time.time()
 # time_cost = time.time()-start
 url = "https://namu.wiki/w/뫼르소/%EC%9D%B8%EA%B2%8C%EC%9E%84%20%EC%A0%95%EB%B3%B4"
@@ -68,12 +66,6 @@ if response.status_code == 200:
   insert_passive_info(content_list, identity_json)
   insert_support_passive_info(content_list, identity_json)
   
-  ### 본국검술 같은거도 어딘가에 저장해서 다 정리해야될듯
-  ### [사용시], [적중시]  이런거, [~]로 <span style="color:색 에서 거르면 될듯
-  ### span에서 처리해야될듯
-  basic_keyword_list = ['합 위력','최종 위력','코인 위력','수비 위력'
-                        ,'기본 위력','피해량 +','체력 회복']
-
   ### keyword 검출 
   find_rest_keyword(identity_json, identity_keyword_dict, support_keyword_dict)
   
