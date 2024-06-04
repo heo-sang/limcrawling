@@ -2,9 +2,16 @@ import re
 import json
 import lxml
 from bs4 import BeautifulSoup
+import os
 
 sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
-
+keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
+special_keyword_list = ['탄환','저주','못','약점 분석','광신','차원 균열'
+                        ,'파열 보호','결투 선포','충전 역장','버림','탐구한 지식'
+                        ,'앙갚음 대상','홍매화','흑염','저택의 메아리','1대1 대결']
+colored_basic_keyword_list = ['마비','취약','보호','신속','속박'
+                              ,'도발치','공격 레벨','방어 레벨','피해량 증가']
+  
 
 def skill_assignment(identity_json, skill, key, value):
   identity_json['스킬'][skill].update({key:value})
@@ -32,6 +39,15 @@ def remove_hidden_area (base_data) :
         or 'display:inline' not in attrs['style'] and 'display:none' in attrs['style']):
       element.clear()
       element.decompose()
+
+# 인격 이미지 저장
+def save_identity_image(base_data, identity_prefix, identity_name) :
+  for temp_image in base_data.find_all('img') :
+    attrs = temp_image.attrs
+    if 'alt' not in attrs : continue
+    if identity_prefix in attrs['alt'] :
+      os.system(f"curl https:{attrs['src']} > ./image/identity/뫼르소/{identity_name}.webp")
+      break
 
 # 사용하지 않는 영역 제거
 def remove_unused_data(identity_data) :
@@ -62,13 +78,7 @@ def find_keywords(base_data) :
 def insert_keyword(soup) :
   with open('temp_data/unique_keyword.json', 'r', encoding='utf8') as f:
     unique_keyword_list = json.load(f)
-  keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
-  special_keyword_list = ['탄환','구더기','저주','못','약점 분석','광신','차원 균열'
-                          ,'파열 보호','결투 선포','충전 역장','버림','탐구한 지식'
-                          ,'앙갚음 대상','홍매화','흑염']
-  colored_basic_keyword_list = ['마비','취약','보호','신속','속박'
-                                ,'도발치','공격 레벨','방어 레벨','피해량 증가']
-  
+
   keyword_dict = {'대표':[],'기본':[],'특별':[]}
   for span in soup.find_all('span') : 
     if 'color' not in span.get('style', '') : continue
@@ -154,7 +164,9 @@ def insert_basic_info(content_list) :
   return identity_json
 
 # 스킬 정보 추가
-def insert_skill_info(content_list, identity_json, attack_type_list, sin_type_list):
+def insert_skill_info(content_list, identity_json):
+  attack_type_list = []
+  sin_type_list = []
   skill_idx_list = [idx for idx, value in enumerate(content_list) 
                       if value == '스킬']
   skill_idx_list.append(content_list.index('패시브'))
@@ -195,7 +207,7 @@ def insert_skill_info(content_list, identity_json, attack_type_list, sin_type_li
     skill_assignment(identity_json, skill, '공격가중치', int(attack_power))
     ### 코인별효과
     insert_coin_action(skill_detail, skill, identity_json)
-
+  return attack_type_list, sin_type_list
 
 
 
@@ -254,3 +266,28 @@ def insert_support_passive_info(content_list, identity_json) :
 def change_sin_by_affiliation(affiliation, identity_keyword_dict) :
   if affiliation == '약지' :
     identity_keyword_dict['대표'] = ['출혈']
+
+# 남은 키워드 찾기
+def find_rest_keyword(identity_json, identity_keyword_dict, support_keyword_dict) : 
+  mentality_pattern = re.compile(r'.*정신력 \d+ 회복.*')
+  rest_keyword_list = ['공격 가중치']
+
+  for key, value in identity_json['스킬'].items() :
+    for k2, v2 in value.items():
+      if k2 !='코인별효과' : continue
+      for k3, v3 in v2.items():
+        for str in v3 :
+          if mentality_pattern.match(str):
+            identity_keyword_dict['기본'].append('정신력 회복')
+          for keyword in rest_keyword_list :
+            if keyword in str :
+              identity_keyword_dict['기본'].append(keyword)
+  
+  for key, value in identity_json['서포트 패시브'].items() :
+    if key !='내용' : continue
+    for str in value:      
+      if mentality_pattern.match(str):
+        support_keyword_dict['기본'].append('정신력 회복')
+      for keyword in rest_keyword_list :
+        if keyword in str :
+          support_keyword_dict['기본'].append(keyword)

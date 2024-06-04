@@ -4,7 +4,6 @@ import html
 import re
 from bs4 import BeautifulSoup 
 from data_processing import *
-import urllib.request
 import os
 import time
 
@@ -42,15 +41,6 @@ if response.status_code == 200:
 
   with open('temp_data/unique_keyword.json', 'r', encoding='utf8') as f:
     unique_keyword_list = json.load(f)
-  keyword_list = ['충전','호흡','출혈','파열','화상','진동','침잠']
-  sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
-  special_keyword_list = ['탄환','구더기','저주','못','약점 분석','광신','차원 균열'
-                          ,'파열 보호','결투 선포','충전 역장','버림','탐구한 지식'
-                          ,'앙갚음 대상']
-  colored_basic_keyword_list = ['마비','취약','보호','신속','속박'
-                                ,'도발치','공격 레벨','방어 레벨','피해량 증가']
-  attack_type_list = []
-  sin_type_list = []
   
   ### 안보이는 영역 제거
   remove_hidden_area(base_data)
@@ -58,13 +48,7 @@ if response.status_code == 200:
   identity_keyword_dict, support_keyword_dict = find_keywords(base_data)
   
   ### 이미지 저장하는 코드 작성예정
-  for temp_image in base_data.find_all('img') :
-    attrs = temp_image.attrs
-    if 'alt' not in attrs : continue
-    if identity_prefix in attrs['alt'] :
-      print(identity_name)
-      os.system(f"curl https:{attrs['src']} > ./image/identity/뫼르소/{identity_name}.webp")
-      break
+  save_identity_image(base_data, identity_prefix, identity_name)
   ### 스킬, 코인, 죄악 텍스트화
   image_to_text(base_data)
   ### 패시브 텍스트 추가
@@ -80,14 +64,9 @@ if response.status_code == 200:
   
   ### 스킬
   identity_json['스킬'] = {}
-  insert_skill_info(content_list, identity_json, attack_type_list, sin_type_list)
+  attack_type_list, sin_type_list = insert_skill_info(content_list, identity_json)
   change_sin_by_affiliation(identity_json['소속'], identity_keyword_dict)
-
-  identity_json['공격유형'] = sorted(set(attack_type_list))
-  identity_json['죄악속성'] = sorted(set(sin_type_list))
-  identity_json['키워드'] = identity_keyword_dict
-  identity_json['서포트 키워드'] = support_keyword_dict
-  
+ 
   insert_passive_info(content_list, identity_json)
   ### 서포트 패시브
   insert_support_passive_info(content_list, identity_json)
@@ -99,19 +78,22 @@ if response.status_code == 200:
                         ,'기본 위력','피해량 +','체력 회복']
 
   mentality_pattern = re.compile(r'정신력 \d+ 회복')
+
   ### keyword 검출 
-  
+  find_rest_keyword(identity_json, identity_keyword_dict, support_keyword_dict)
   # for item in identity_json['서포트 패시브']['내용']:
   #   for keyword in keyword_list:
   #     if keyword in item: 
   #        support_keywords.append(keyword)
       
+  identity_json['공격유형'] = sorted(set(attack_type_list))
+  identity_json['죄악속성'] = sorted(set(sin_type_list))
+  identity_json['키워드'] = identity_keyword_dict
+  identity_json['서포트 키워드'] = support_keyword_dict
+
   with open('data.json', 'w', encoding='utf-8') as f:
     json.dump(identity_json, f, ensure_ascii=False, indent=2)    
-  # with open("t1.html", "w", encoding='utf8') as file:
-  #   file.write('\n'.join(content_list)) 
-  # with open("yisang_seven_html.html", "w", encoding='utf8') as file:
-  #   file.write(str(base_data.prettify())) # html 형식
+
     
 else : 
     print(response.status_code)
