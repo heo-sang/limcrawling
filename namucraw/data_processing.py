@@ -57,11 +57,10 @@ def save_identity_image(base_data, sinner_name, identity_prefix, identity_name) 
     if 'alt' not in attrs : continue
     if (sinner_name in attrs['alt'] 
         and '로고' not in attrs['alt']
-        and '자아파편' not in attrs['alt']) :
-      print(identity_prefix)
-      if not os.path.exists(image_path) :
-        os.system(f"curl https:{attrs['src']} > {image_path}")
-        break
+        and '자아파편' not in attrs['alt']
+        and not os.path.exists(image_path)) :
+      os.system(f"curl https:{attrs['src']} > {image_path}")
+      break
 
 # 사용하지 않는 영역 제거
 def remove_unused_data(identity_data) :
@@ -94,10 +93,12 @@ def insert_keyword(soup) :
   for span in soup.find_all('span') : 
     if 'color' not in span.get('style', '') : continue
     keyword_text = span.text
+    
     if keyword_text in keyword_list :
       keyword_dict['대표'].append(keyword_text)
-    if keyword_text in colored_basic_keyword_list :
-      keyword_dict['기본'].append(keyword_text)
+    for keyword in colored_basic_keyword_list :
+      if keyword not in keyword_text : continue
+      keyword_dict['기본'].append(keyword)
     if keyword_text in special_keyword_list :
       keyword_dict['특별'].append(keyword_text)
     temp_keyword = unique_keyword_dict.get(keyword_text, keyword_text)

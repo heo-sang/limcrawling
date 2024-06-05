@@ -1,7 +1,8 @@
 from identity_crawling import *
 from data_processing import *
-def main():
 
+# 키워드쪽 수정 필요 (증가 감소, 진동폭발 등)
+def main():
   with open('sinners.json', 'r', encoding='utf-8') as f:
     sinner_dict = json.load(f) 
   for sinner in sinner_dict:
@@ -19,7 +20,5 @@ def main():
       print(f'{sinner}, {identity_id}')
       identity_crawling(soup, sinner, identity_id)
     
-
 if __name__ == "__main__":
-
   main()
