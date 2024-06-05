@@ -16,7 +16,7 @@ def main():
     soup = BeautifulSoup(html, 'html.parser')
     identity_id_list = get_identity_list(soup)
     for identity_id in identity_id_list:
-      print(f'{sinner_name}, {identity_id}')
+      print(f'{sinner}, {identity_id}')
       identity_crawling(soup, sinner, identity_id)
     
 
