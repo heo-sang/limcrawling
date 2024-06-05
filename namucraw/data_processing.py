@@ -46,14 +46,13 @@ def remove_hidden_area (base_data) :
       element.decompose()
 
 # 인격 이미지 저장
-def save_identity_image(base_data, identity_prefix, identity_name) :
-  image_path = f'./image/identity/뫼르소/{identity_name}.webp'
+def save_identity_image(base_data, sinner_name, identity_prefix, identity_name) :
+  image_path = f'./image/identity/{sinner_name}/{identity_name}.webp'
   for temp_image in base_data.find_all('img') :
     attrs = temp_image.attrs
     if 'alt' not in attrs : continue
     if identity_prefix in attrs['alt'] :
       if not os.path.exists(image_path) :
-        print(os.path.isfile(image_path))
         os.system(f"curl https:{attrs['src']} > {image_path}")
         break
 
@@ -144,11 +143,10 @@ def html_to_list(base_data):
   return content_list
 
 # 기본 정보추가
-def insert_basic_info(content_list) :
+def insert_basic_info(content_list, identity_name) :
   # 수감자하고 인격 밖에서 해도될듯
   identity_json = {}
-  identity_name = re.sub(r'\[\s*(.*?)\s*\]', r'\1 ', content_list[0]).strip()
-  identity_json['수감자'] = identity_name.split('  ')[1]
+  identity_json['수감자'] = identity_name.split(' ')[-1]
   identity_json['인격'] = identity_name
   identity_json['동기화'] = 4
   identity_json['레벨'] = 45
@@ -300,3 +298,13 @@ def find_rest_keyword(identity_json, identity_keyword_dict, support_keyword_dict
       for keyword in rest_keyword_list :
         if keyword in str :
           support_keyword_dict['기본'].append(keyword)
+
+def get_serial_number(sinner_num, identity_json, identity_id):  
+  identity_num = identity_id.split('.')[2]
+  serial_number = ('1'
+                   +sinner_num
+                   +str(identity_json['등급'])
+                   +identity_num.zfill(2)
+                   +str(identity_json['동기화'])
+                   +str(identity_json['레벨']))
+  return {'일련번호':int(serial_number)}
