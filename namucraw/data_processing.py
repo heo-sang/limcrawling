@@ -47,11 +47,18 @@ def remove_hidden_area (base_data) :
 
 # 인격 이미지 저장
 def save_identity_image(base_data, sinner_name, identity_prefix, identity_name) :
-  image_path = f'./image/identity/{sinner_name}/{identity_name}.webp'
+  special_character = ['/', ':', '*', '?', '"', '<', '>', '|']
+  underbar_identity_name = identity_name
+  for character in special_character:
+    underbar_identity_name = underbar_identity_name.replace(f'{character}','_')
+  image_path = f'./image/identity/{sinner_name}/{underbar_identity_name}.webp'
   for temp_image in base_data.find_all('img') :
     attrs = temp_image.attrs
     if 'alt' not in attrs : continue
-    if identity_prefix in attrs['alt'] :
+    if (sinner_name in attrs['alt'] 
+        and '로고' not in attrs['alt']
+        and '자아파편' not in attrs['alt']) :
+      print(identity_prefix)
       if not os.path.exists(image_path) :
         os.system(f"curl https:{attrs['src']} > {image_path}")
         break

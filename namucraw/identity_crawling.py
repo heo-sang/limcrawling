@@ -43,6 +43,9 @@ def identity_crawling(soup, sinner_name, identity_id) :
   ### 안 사용하는 영역 제거
   remove_unused_data(content_list) 
 
+  with open('./content_temp.txt', 'w', encoding='utf-8') as f:
+    f.write('\n'.join(content_list))
+
   ### json 파일 제작과정
   identity_json = insert_basic_info(content_list, identity_name)
   
@@ -70,6 +73,7 @@ def identity_crawling(soup, sinner_name, identity_id) :
   special_character = ['/', ':', '*', '?', '"', '<', '>', '|']
   for character in special_character:
     underbar_identity_name = underbar_identity_name.replace(f'{character}','_')
-  json_path = f'./json/identity/{sinner_name}/{underbar_identity_name}.json'
+  num = identity_json['일련번호']
+  json_path = f'./json/identity/{sinner_name}/{num}_{underbar_identity_name}.json'
   with open(json_path, 'w', encoding='utf-8') as f:
     json.dump(identity_json, f, ensure_ascii=False, indent=2)    
