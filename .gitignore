@@ -2,9 +2,6 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 
 
-###
-mongo/
-
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
