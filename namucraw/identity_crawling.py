@@ -7,6 +7,7 @@ from data_processing import *
 import os
 import time
 
+# id 어떻게 할지 생각해봐야될듯
 
 def identity_crawling(soup, sinner_name, identity_id) :
   with open('sinners.json', 'r', encoding='utf-8') as f:
