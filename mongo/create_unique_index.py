@@ -17,6 +17,3 @@ collection = db['identity_detail']
 
 # 고유 인덱스 설정
 collection.create_index([("일련번호", 1)], unique=True)
-db['affiliation'].create_index([("소속",1)], unique=True)
-db['special_keyword'].create_index([("키워드",1)], unique=True)
-db['basic_keyword'].create_index([("키워드",1)], unique=True)
