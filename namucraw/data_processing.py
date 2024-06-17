@@ -169,12 +169,19 @@ def insert_basic_info(content_list, identity_name) :
   identity_json['내성정보'][content_list[resistance_idx+1]] = content_list[resistance_idx+2]
   identity_json['내성정보'][content_list[resistance_idx+3]] = content_list[resistance_idx+4]
   identity_json['내성정보'][content_list[resistance_idx+5]] = content_list[resistance_idx+6]
-  identity_json['소속'] = content_list[content_list.index('소속')+1]
+  identity_json['소속'] = get_affiliation(content_list[content_list.index('소속')+1])
+  
   grade = re.sub(r'\D', '', content_list[content_list.index('인격 등급')+1])
   identity_json['등급'] = int(grade)
   identity_json['출시시기'] = content_list[content_list.index('출시 시기')+1].replace('.', '-')
   return identity_json
 
+def get_affiliation(affiliation) :
+  if affiliation == '로보토미 본사' : 
+    affiliation = 'L사'
+  if affiliation.startswith('구 ') :
+    affiliation = affiliation[2:]
+  return affiliation
 # 스킬 정보 추가
 def insert_skill_info(content_list, identity_json):
   attack_type_list = []
