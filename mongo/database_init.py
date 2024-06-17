@@ -1,9 +1,18 @@
 import mysql.connector
 import dotenv 
+from pymongo import MongoClient
 import os
 
 def create_database_and_table():
   dotenv.read_dotenv()
+  mongo_uri = os.getenv('mongo_uri')
+  # MongoDB 클라이언트 생성
+  client = MongoClient(mongo_uri)
+  db = client['limbus_data']
+  collection = db['identity_detail']
+  # 고유 인덱스 설정
+  collection.create_index([("일련번호", 1)], unique=True)
+
   try:
     # MySQL 서버에 연결
     mysql_connection = mysql.connector.connect(
@@ -21,19 +30,19 @@ def create_database_and_table():
             """
             CREATE TABLE IF NOT EXISTS special_keywords (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL
+                name VARCHAR(255) NOT NULL UNIQUE
             )
             """,
             """
             CREATE TABLE IF NOT EXISTS basic_keywords (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL
+                name VARCHAR(255) NOT NULL UNIQUE
             )
             """,
             """
-            CREATE TABLE IF NOT EXISTS affiliation (
+            CREATE TABLE IF NOT EXISTS affiliations (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL
+                name VARCHAR(255) NOT NULL UNIQUE
             )
             """
       ]
@@ -44,7 +53,6 @@ def create_database_and_table():
   except mysql.connector.Error as e:
       print(f"Error: {e}")
   finally:
-    # 연결 닫기
     if 'connection' in locals() and mysql_connection.is_connected():
       cursor.close()
       mysql_connection.close()

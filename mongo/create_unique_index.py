@@ -8,7 +8,7 @@ import os
 
 
 dotenv.read_dotenv()
-mongo_uri = os.environ.get('mongo_uri')
+mongo_uri = os.getenv('mongo_uri')
 
 # MongoDB 클라이언트 생성
 client = MongoClient(mongo_uri)
