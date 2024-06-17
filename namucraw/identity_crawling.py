@@ -13,16 +13,17 @@ def identity_crawling(soup, sinner_name, identity_id) :
   with open('sinners.json', 'r', encoding='utf-8') as f:
     sinner_dict = json.load(f) 
   name_soup = soup.find(id=identity_id, href='#toc')
-  identity_prefix = name_soup.find_next_sibling()
-  identity_prefix.select_one('.wiki-edit-section').decompose()
-  identity_prefix = identity_prefix.text
+  pattern = r'\[[^\]]*\]'
+  identity_prefix = re.sub(pattern, '', name_soup.find_next_sibling().text)
+  identity_name = f"{identity_prefix} {sinner_name}"
   if '[임시]' in identity_prefix: 
     print(f'{sinner_name} : {identity_id} 임시데이터')
     return
-  identity_name = f"{identity_prefix} {sinner_name}"
+  while name_soup :
+    if name_soup.has_attr('class') and name_soup.name == 'div' :break  
+    else : name_soup = name_soup.parent
   base_data = (
      name_soup
-     .parent
      .find_next_sibling()
      .find('div')
   )
