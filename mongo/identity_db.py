@@ -31,8 +31,9 @@ def identity_init():
   file_paths = []
   sinner_list = ["이상","파우스트","돈키호테","료슈","뫼르소","홍루"
                  ,"히스클리프","이스마엘","로쟈","싱클레어","오티스","그레고르"]
-  for sinner in sinner_list:
-    file_paths += glob.glob(f'../namucraw/json/identity/{sinner}/*.json')
+  file_paths = [path for sinner in sinner_list 
+                  for path in glob.glob(f'../namucraw/json/identity/{sinner}/*.json')]
+    
   for file_path in file_paths:
     with open(file_path, 'r', encoding='utf-8') as file:
       data = json.load(file)
@@ -52,42 +53,34 @@ def insert_data_with_unique_index(collection, data):
 
 
 def add_keywords() :
-  special_keywords = []
-  basic_keywords = []
-  affiliations = []
-  file_paths = []
+  special_keywords, basic_keywords, affiliations = set(), set(), set()
   sinner_list = ["이상","파우스트","돈키호테","료슈","뫼르소","홍루"
                  ,"히스클리프","이스마엘","로쟈","싱클레어","오티스","그레고르"]
-  for sinner in sinner_list:
-    file_paths += glob.glob(f'../namucraw/json/identity/{sinner}/*.json')
+  file_paths = [path for sinner in sinner_list 
+                  for path in glob.glob(f'../namucraw/json/identity/{sinner}/*.json')]
+   
   for file_path in file_paths:
     with open(file_path, 'r', encoding='utf-8') as file:
       data = json.load(file)
-      affiliations.append(data['소속'])
+      affiliations.add(data['소속'])
       keywords = data['키워드']
       support_keywords = data['키워드']
       for k in keywords['기본']:
-        basic_keywords.append(k)
+        basic_keywords.add(k)
       for k in support_keywords['기본']:
-        basic_keywords.append(k)
+        basic_keywords.add(k)
       for k in keywords['특별']:
-        special_keywords.append(k)
+        special_keywords.add(k)
       for k in support_keywords['특별']:
-        special_keywords.append(k)
-     
-  special_keywords = sorted(set(special_keywords))
-  basic_keywords = sorted(set(basic_keywords))
-  for keyword in special_keywords:
-    sql = "INSERT IGNORE INTO special_keywords (name) VALUES (%s)"
-    val = (keyword,)
-    mycursor.execute(sql, val)
-  for keyword in basic_keywords:
-    sql = "INSERT IGNORE INTO basic_keywords (name) VALUES (%s)"
-    val = (keyword,)
-    mycursor.execute(sql, val)
-  for affiliation in affiliations:
-    sql = "INSERT IGNORE INTO affiliations (name) VALUES (%s)"
-    val = (affiliation,)
-    mycursor.execute(sql, val)
+        special_keywords.add(k)
+
+  insert_keywords("special_keywords", special_keywords)
+  insert_keywords("basic_keywords", basic_keywords)
+  insert_keywords("affiliations", affiliations)
   mysql_connection.commit()
+def insert_keywords(table, temp_list):
+  for value in temp_list:
+    sql = f"INSERT IGNORE INTO {table} (name) VALUES (%s)"
+    mycursor.execute(sql, (value,))
+
 add_keywords()
