@@ -112,7 +112,6 @@ def insert_keyword(soup) :
 
 # 스킬, 코인, 죄악, 코인별효과 이미지 텍스트화
 def image_to_text(base_data) :
-  sin_list = ['분노','색욕','나태','탐식','우울','오만','질투']
   for element in base_data.find_all('img'):
     attrs = element.attrs
     if 'UI' in attrs['alt'] : 
