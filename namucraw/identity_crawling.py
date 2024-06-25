@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 from data_processing import *
 import os
 import time
+from datetime import datetime
+
 
 # id 어떻게 할지 생각해봐야될듯
 
@@ -16,9 +18,6 @@ def identity_crawling(soup, sinner_name, identity_id) :
   pattern = r'\[[^\]]*\]'
   identity_prefix = re.sub(pattern, '', name_soup.find_next_sibling().text)
   identity_name = f"{identity_prefix} {sinner_name}"
-  if '[임시]' in identity_prefix: 
-    print(f'{sinner_name} : {identity_id} 임시데이터')
-    return
   while name_soup :
     if name_soup.has_attr('class') and name_soup.name == 'div' :break  
     else : name_soup = name_soup.parent
@@ -42,6 +41,13 @@ def identity_crawling(soup, sinner_name, identity_id) :
   base_data = remove_whitespace(base_data)
   ### 리스트 형태로 변경
   content_list = html_to_list(base_data)
+
+  ### 아직 출시하지 않았으면 생략
+  release_date = datetime.strptime(content_list[content_list.index('출시 시기')+1], '%Y.%m.%d')
+  if datetime.today()<release_date:
+    print('not released yet')
+    return
+
   ### 안 사용하는 영역 제거
   remove_unused_data(content_list) 
 
